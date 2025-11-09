@@ -1,0 +1,75 @@
+<%- include('./partials/layout.ejs', { title: 'Users' , body: ` <div
+    class="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
+    <div>
+        <h2 class="text-3xl font-bold text-gray-800">User Management</h2>
+        <p class="text-gray-600 mt-1">Manage all registered users in the system</p>
+    </div>
+    <a href="/admin/users/add"
+        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Add New User
+    </a>
+    </div>
+
+    <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+        ${users.length ? `
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
+                    <tr>
+                        <th class="py-4 px-6 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Name
+                        </th>
+                        <th class="py-4 px-6 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Email
+                        </th>
+                        <th class="py-4 px-6 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Role
+                        </th>
+                        <th class="py-4 px-6 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                            Department</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    ${users.map(u => `
+                    <tr
+                        class="hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/50 transition-colors duration-150">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm mr-3">
+                                    ${u.name.charAt(0).toUpperCase()}
+                                </div>
+                                <span class="font-medium text-gray-900">${u.name}</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-gray-700">${u.email}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-3 py-1 rounded-full text-sm font-semibold ${
+                                    u.role === 'student' ? 'bg-blue-100 text-blue-800' :
+                                    u.role === 'professor' ? 'bg-green-100 text-green-800' :
+                                    'bg-purple-100 text-purple-800'
+                                }">
+                                ${u.role.charAt(0).toUpperCase() + u.role.slice(1)}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-gray-700">${u.department}</td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        ` : `
+        <div class="p-12 text-center">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                </svg>
+            </div>
+            <p class="text-gray-500 text-lg font-medium">No users found</p>
+            <p class="text-gray-400 mt-2">Get started by adding your first user</p>
+        </div>
+        `}
+    </div>
+    `}) %>

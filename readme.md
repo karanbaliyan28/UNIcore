@@ -1,4 +1,4 @@
-# Backend Wrap‑Up — Auth, Roles, Dashboard & Departments
+****# Backend Wrap‑Up — Auth, Roles, Dashboard & Departments
 
 Your focus: **production‑style Node.js + Express + MongoDB (Mongoose)** with clean MVC, JWT auth, and role‑based access. This file is your revision sheet.
 
@@ -592,4 +592,27 @@ const q = req.query.search; if (q) query.name = { $regex: q, $options: "i" };
 **You’ve got this.** Rehearse the flow, then write one clean route + model + controller from memory. That’s the win.
 
 
+**🚨 Important:** .map() with async Returns an Array of Promises
 
+*Example*:
+
+```js
+const promises = departments.map(async (dept) => {
+  const userCount = await User.countDocuments({ department: dept.name });
+  return { ...dept, userCount };
+});
+```
+
+
+Now promises looks like this (conceptually):
+
+```js
+[
+  Promise<dept1WithCount>,
+  Promise<dept2WithCount>,
+  Promise<dept3WithCount>
+]
+```
+
+
+They’re all running asynchronously at the same time — that’s efficient!

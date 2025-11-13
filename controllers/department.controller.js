@@ -15,7 +15,7 @@ export const postAddDepartment = async (req, res) => {
   try {
     const { name, programType, address } = req.body;
 
-    // Validate required fields
+    // Validate required fields 
     if (!name || !programType || !address) {
       return res.render("add-department", {
         title: "Add Department",

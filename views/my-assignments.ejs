@@ -1,0 +1,116 @@
+<%- include('./partials/student/header') %>
+
+    <div class="p-6">
+
+        <h2 class="text-3xl font-bold mb-6 text-gray-800">My Assignments</h2>
+
+        <!-- Filter -->
+        <form class="mb-6 flex items-center gap-3">
+            <label class="font-medium text-gray-700">Filter:</label>
+
+            <select name="status" class="p-3 border rounded-lg bg-white shadow-sm text-gray-700 font-medium 
+                   focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer transition"
+                onchange="this.form.submit()">
+
+                <option value="">All Assignments</option>
+                <option value="draft">Draft</option>
+                <option value="submitted">Submitted</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+
+            </select>
+        </form>
+
+        <!-- Table Container -->
+        <div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
+            <table id="assignmentTable" class="min-w-full">
+
+                <thead class="bg-gray-100 border-b">
+                    <tr>
+                        <th class="p-4 text-left font-semibold text-gray-700 cursor-pointer hover:text-indigo-600 transition"
+                            onclick="sortByDate()">
+                            Date ⬍
+                        </th>
+                        <th class="p-4 text-left font-semibold text-gray-700">Title</th>
+                        <th class="p-4 text-left font-semibold text-gray-700">Category</th>
+                        <th class="p-4 text-left font-semibold text-gray-700">Reviewer</th>
+                        <th class="p-4 text-left font-semibold text-gray-700">Status</th>
+                        <th class="p-4 text-center font-semibold text-gray-700">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+                    <% assignments.forEach(a=> { %>
+                        <tr class="hover:bg-gray-50 transition">
+
+                            <td class="p-4 text-gray-700 font-medium">
+                                <%= a.createdAt.toDateString() %>
+                            </td>
+
+                            <td class="p-4 text-gray-800">
+                                <%= a.title %>
+                            </td>
+
+                            <td class="p-4 text-gray-600">
+                                <%= a.category %>
+                            </td>
+
+                            <!-- Reviewer -->
+                            <td class="p-4 text-gray-700 font-medium">
+                                <%= a.reviewerId ? a.reviewerId.name : "Not Assigned" %>
+                            </td>
+
+                            <!-- Status badge -->
+                            <td class="p-4">
+                                <% if (a.status==="approved" ) { %>
+                                    <span
+                                        class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+                                        Approved
+                                    </span>
+                                    <% } else if (a.status==="submitted" ) { %>
+                                        <span
+                                            class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
+                                            Submitted
+                                        </span>
+                                        <% } else if (a.status==="rejected" ) { %>
+                                            <span
+                                                class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">
+                                                Rejected
+                                            </span>
+                                            <% } else { %>
+                                                <span
+                                                    class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-semibold">
+                                                    Draft
+                                                </span>
+                                                <% } %>
+                            </td>
+
+                            <!-- View Button -->
+                            <td class="p-4 text-center">
+                                <a href="/student/assignments/<%= a._id %>" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm 
+                                       hover:bg-indigo-700 transition shadow">
+                                    View
+                                </a>
+                            </td>
+
+                        </tr>
+                        <% }) %>
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        function sortByDate() {
+            const table = document.getElementById("assignmentTable");
+            const rows = Array.from(table.rows).slice(1); // skip header
+            const sorted = rows.sort((a, b) => {
+                return new Date(a.cells[0].innerText) - new Date(b.cells[0].innerText);
+            });
+            sorted.forEach(row => table.appendChild(row));
+        }
+    </script>
+
+    <%- include('./partials/student/footer') %>

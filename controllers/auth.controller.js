@@ -14,7 +14,11 @@ export const login = async (req, res) => {
       return res.render("login", { error: "Invalid email or password" });
 
     const token = jwt.sign(
-      { id: admin._id, role: "admin" },
+      {
+        id: admin._id,
+        role: "admin",
+        department: admin.department ?? null,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -32,7 +36,11 @@ export const login = async (req, res) => {
     return res.render("login", { error: "Invalid email or password" });
 
   const token = jwt.sign(
-    { id: user._id, role: user.role },
+    {
+      id: user._id,
+      role: user.role,
+      department: user.department,
+    },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );

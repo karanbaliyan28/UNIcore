@@ -1,6 +1,5 @@
 import express from "express";
-import { protect } from "../middlewares/auth.middleware.js";
-import { adminOnly } from "../middlewares/role.middleware.js";
+import { protect ,adminOnly } from "../middlewares/auth.middleware.js";
 import {
   getAddDepartment,
   postAddDepartment,

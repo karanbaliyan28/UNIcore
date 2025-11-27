@@ -1,0 +1,239 @@
+<%- include('../partials/professor/header') %>
+
+    <div class="min-h-screen bg-gray-100 py-10">
+        <div class="max-w-7xl mx-auto px-4">
+
+            <!-- Back -->
+            <div class="mb-6">
+                <a href="/professor/dashboard"
+                    class="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition font-semibold">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to Dashboard
+                </a>
+            </div>
+
+            <!-- Assignment Summary Card -->
+            <div class="bg-white shadow-md rounded-2xl p-6 mb-8 border-l-4 border-indigo-500">
+                <h1 class="text-3xl font-bold text-gray-900 mb-6">Review Assignment</h1>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Student Card -->
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="h-16 w-16 rounded-full bg-indigo-600 text-white flex items-center justify-center text-2xl font-bold shadow">
+                            <%= assignment.studentId.name.charAt(0).toUpperCase() %>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Student</p>
+                            <p class="text-lg font-bold text-gray-900">
+                                <%= assignment.studentId.name %>
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <%= assignment.studentId.email %>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Submission Info -->
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Submitted On</p>
+                            <p class="text-lg font-bold text-gray-900">
+                                <%= assignment.createdAt.toLocaleDateString('en-US', { weekday: 'long' , year: 'numeric'
+                                    , month: 'long' , day: 'numeric' }) %>
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Days Pending</p>
+                            <% const daysPending=Math.floor((Date.now() - assignment.createdAt) / (1000*60*60*24)); %>
+                                <p class="text-lg font-bold <%= daysPending > 7 ? 'text-red-600' : 'text-gray-900' %>">
+                                    <%= daysPending %> days
+                                </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Main Layout -->
+            <div class="lg:grid lg:grid-cols-3 lg:gap-4">
+
+                <!-- LEFT SIDE -->
+                <div class="lg:col-span-2 space-y-4">
+
+                    <!-- Assignment Details -->
+                    <div class="bg-white rounded-xl shadow-md p-4">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Assignment Details</h2>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Left: Title -->
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase">
+                                    Title
+                                </label>
+                                <p class="text-lg text-gray-900 font-medium mt-1">
+                                    <%= assignment.title %>
+                                </p>
+                            </div>
+
+                            <!-- Right: Description -->
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase">
+                                    Description
+                                </label>
+                                <p class="text-gray-700 mt-1 leading-relaxed">
+                                    <%= assignment.description || 'No description provided.' %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- PDF VIEWER -->
+                    <div class="bg-white rounded-2xl shadow-md p-6" style="height: 500px;">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-900">Assignment Document</h2>
+
+                            <% if (assignment.fileUrl) { %>
+                                <a href="/uploads/<%= assignment.fileUrl %>" download
+                                    class="px-4 py-2 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 transition flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 
+                                      01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Download PDF
+                                </a>
+                                <% } %>
+                        </div>
+
+                        <% if (assignment.fileUrl) { %>
+                            <!-- FULL PREMIUM VIEWER -->
+                            <div class="border rounded-xl bg-gray-50 shadow-inner overflow-hidden"
+                                style="height: 380px;">
+                                <iframe src="/uploads/<%= assignment.fileUrl %>#toolbar=1" class="w-full h-full"
+                                    style="border:none;">
+                                </iframe>
+                            </div>
+
+                            <div class="mt-4 text-center">
+                                <a href="/uploads/<%= assignment.fileUrl %>" target="_blank"
+                                    class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    Open in New Tab →
+                                </a>
+                            </div>
+                            <% } else { %>
+                                <p class="text-center py-12 text-gray-500">No file uploaded.</p>
+                                <% } %>
+                    </div>
+
+
+                    <!-- HISTORY -->
+                    <% if (assignment.history && assignment.history.length> 0) { %>
+                        <div class="bg-white rounded-2xl shadow-md p-6">
+                            <h2 class="text-xl font-bold text-gray-900 mb-4">Review History</h2>
+
+                            <div class="space-y-4">
+                                <% assignment.history.forEach(h=> { %>
+                                    <div class="p-4 rounded-xl 
+                                    <%= h.action === 'approved'
+                                        ? 'bg-green-50 border-l-4 border-green-500'
+                                        : 'bg-red-50 border-l-4 border-red-500' %>">
+
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="font-semibold 
+                                            <%= h.action === 'approved' ? 'text-green-700' : 'text-red-700' %>">
+                                                <%= h.action.toUpperCase() %>
+                                            </span>
+                                            <span class="text-sm text-gray-500">
+                                                <%= new Date(h.date).toLocaleDateString() %>
+                                            </span>
+                                        </div>
+
+                                        <p class="text-gray-700 text-sm mb-1">
+                                            <%= h.remark %>
+                                        </p>
+                                        <p class="text-xs text-gray-500">— <%= h.signature %>
+                                        </p>
+                                    </div>
+                                    <% }) %>
+                            </div>
+                        </div>
+                        <% } %>
+                </div>
+
+
+                <!-- RIGHT SIDE (Sticky Review Panel) -->
+                <div class="mt-8 lg:mt-0 sticky top-6">
+                    <div class="bg-white rounded-2xl shadow-md p-6">
+
+                        <h2 class="text-xl font-bold text-gray-900 mb-6">Submit Review</h2>
+
+                        <form action="/professor/review/<%= assignment._id %>" method="POST" id="reviewForm"
+                            class="space-y-6">
+
+                            <!-- Remarks -->
+                            <div>
+                                <label class="text-sm font-semibold text-gray-700 mb-2 block">Review Remarks *</label>
+                                <textarea name="remark" required rows="5"
+                                    class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-indigo-500"></textarea>
+                                <p class="text-xs text-gray-500 mt-1">Minimum 10 characters</p>
+                            </div>
+
+                            <!-- Signature -->
+                            <div>
+                                <label class="text-sm font-semibold text-gray-700 mb-2 block">Your Signature *</label>
+                                <input name="signature" required
+                                    class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Full name">
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="space-y-3 border-t pt-4">
+                                <button type="submit" name="decision" value="approved"
+                                    class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center">
+                                    ✔ Approve Assignment
+                                </button>
+
+                                <button type="submit" name="decision" value="rejected"
+                                    onclick="return confirm('Reject this assignment?')"
+                                    class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center">
+                                    ✖ Reject Assignment
+                                </button>
+                            </div>
+
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 mt-3">
+                                Student will receive a notification instantly after your review.
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Validation
+        document.getElementById("reviewForm").addEventListener("submit", function (e) {
+            const remark = document.querySelector("textarea[name='remark']").value.trim();
+            const signature = document.querySelector("input[name='signature']").value.trim();
+
+            if (remark.length < 10) {
+                e.preventDefault();
+                alert("Please provide at least 10 characters in remarks.");
+            }
+
+            if (signature.length < 2) {
+                e.preventDefault();
+                alert("Signature cannot be empty.");
+            }
+        });
+    </script>
+
+    <%- include('../partials/professor/footer') %>

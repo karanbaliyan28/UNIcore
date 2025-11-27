@@ -14,6 +14,8 @@ import userRoutes from "./routes/user.routes.js";
 dotenv.config();
 connectDB();
 
+console.log("GEMINI KEY:", process.env.GEMINI_API_KEY);
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -23,21 +25,22 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ✅ Serve static files (JS, CSS, Images)
+// Static files
 app.use("/public", express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static("uploads"));
 
-// setup ejs
+// EJS setup
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// ✅ Root route — check login
+// Root route
 app.get("/", (req, res) => {
   const token = req.cookies.token;
   if (token) {
     try {
       jwt.verify(token, process.env.JWT_SECRET);
       return res.redirect("/admin/dashboard");
-    } catch (error) {
+    } catch {
       res.clearCookie("token");
     }
   }
@@ -50,13 +53,12 @@ app.use("/admin", adminRoutes);
 app.use("/admin/departments", departmentRoutes);
 app.use("/admin/users", userRoutes);
 
-//student routes
-import studentRoutes from "./routes/student.routes.js";
+// Student
+import studentRoutes from "./routes/studentAssignments.routes.js";
 app.use("/student", studentRoutes);
 
-//professor routes
+// Professor
 import professorRoutes from "./routes/professor.routes.js";
-
 app.use("/professor", professorRoutes);
 
 // Start server

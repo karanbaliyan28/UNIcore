@@ -1,0 +1,56 @@
+<%- include('./partials/student/header') %>
+
+    <div class="p-6 max-w-2xl mx-auto">
+
+        <h2 class="text-2xl font-bold mb-6">Upload Assignment</h2>
+
+        <form action="/student/assignments/upload" method="POST" enctype="multipart/form-data" class="space-y-4">
+
+            <div>
+                <label class="block font-semibold mb-1">Title</label>
+                <input type="text" name="title" required class="w-full p-3 border rounded">
+            </div>
+
+            <div>
+                <label class="block font-semibold mb-1">Description</label>
+                <textarea name="description" rows="3" class="w-full p-3 border rounded"></textarea>
+            </div>
+
+            <div>
+                <label class="block font-semibold mb-1">Category</label>
+                <select name="category" class="w-full p-3 border rounded" required>
+                    <option value="Assignment">Assignment</option>
+                    <option value="Thesis">Thesis</option>
+                    <option value="Report">Report</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-semibold mb-1">Select Reviewer (Professor)</label>
+                <select name="reviewerId" required class="w-full p-3 border rounded">
+                    <% professors.forEach(p=> { %>
+                        <option value="<%= p._id %>">
+                            <%= p.name %> — <%= p.department %>
+                        </option>
+                        <% }) %>
+                </select>
+            </div>
+
+            <button formaction="/student/assignments/ai-check" formmethod="POST"
+                class="bg-purple-600 text-white px-4 py-2 rounded">
+                AI Grammar Check
+            </button>
+
+
+            <div>
+                <label class="block font-semibold mb-1">Upload PDF</label>
+                <input type="file" name="file" accept="application/pdf" required class="w-full p-3 border rounded">
+            </div>
+
+            <button class="bg-indigo-600 text-white px-4 py-2 rounded">Upload</button>
+
+        </form>
+
+    </div>
+
+    <%- include('./partials/student/footer') %>

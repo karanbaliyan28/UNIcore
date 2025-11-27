@@ -1,0 +1,22 @@
+<%- include('./partials/student/header') %>
+
+    <div class="p-6 max-w-4xl mx-auto">
+
+        <h2 class="text-2xl font-bold mb-4">AI Grammar Check Result</h2>
+
+        <p class="text-gray-600 mb-3">File: <%= filename %>
+        </p>
+
+        <div class="bg-white p-6 shadow rounded border">
+            <pre class="whitespace-pre-wrap text-gray-800"><%= result %></pre>
+        </div>
+
+        <div class="mt-6">
+            <a href="/student/assignments/upload" class="bg-indigo-600 text-white px-4 py-2 rounded">
+                Back to Upload
+            </a>
+        </div>
+
+    </div>
+
+    <%- include('./partials/student/footer') %>

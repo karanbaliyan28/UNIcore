@@ -1,0 +1,212 @@
+<%- include('../partials/professor/header') %>
+
+    <div class="p-6 max-w-7xl mx-auto">
+
+        <!-- Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6 mb-6">
+
+            <div class="bg-blue-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
+                <p class="text-gray-600 font-medium">Pending Review</p>
+                <h3 class="text-3xl font-bold text-blue-700 mt-2">
+                    <%= pending %>
+                </h3>
+            </div>
+
+            <div class="bg-green-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
+                <p class="text-gray-600 font-medium">Approved</p>
+                <h3 class="text-3xl font-bold text-green-700 mt-2">
+                    <%= approved %>
+                </h3>
+            </div>
+
+            <div class="bg-red-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
+                <p class="text-gray-600 font-medium">Rejected</p>
+                <h3 class="text-3xl font-bold text-red-700 mt-2">
+                    <%= rejected %>
+                </h3>
+            </div>
+
+            <div class="bg-indigo-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
+                <p class="text-gray-600 font-medium">Total Reviewed</p>
+                <h3 class="text-3xl font-bold text-indigo-700 mt-2">
+                    <%= totalReviewed %>
+                </h3>
+            </div>
+
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="bg-white shadow rounded-xl p-6 mb-6">
+            <form method="GET" action="/professor/dashboard" class="flex flex-wrap gap-4">
+
+                <!-- Search -->
+                <div class="flex-1 min-w-[250px]">
+                    <input type="text" name="search" value="<%= searchQuery %>"
+                        placeholder="Search by student name or title..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+                </div>
+
+                <!-- Status Filter -->
+                <select name="status"
+                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    <option value="all">All Status</option>
+                    <option value="submitted">Pending Review</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+
+                <!-- Sort By -->
+                <select name="sort"
+                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    <option value="newest" <%=sortBy==='newest' ? 'selected' : '' %>>Newest First</option>
+                    <option value="oldest" <%=sortBy==='oldest' ? 'selected' : '' %>>Oldest First</option>
+                    <option value="title" <%=sortBy==='title' ? 'selected' : '' %>>Title (A-Z)</option>
+                </select>
+
+                <!-- Buttons -->
+                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                    🔍 Apply
+                </button>
+                <a href="/professor/dashboard" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                    Clear
+                </a>
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white shadow rounded-xl overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b">
+                <h3 class="text-xl font-semibold">Assignment Queue</h3>
+            </div>
+
+            <table class="min-w-full text-left">
+                <thead class="bg-gray-100 border-b">
+                    <tr>
+                        <th class="p-3 font-semibold text-gray-700">Student</th>
+                        <th class="p-3 font-semibold text-gray-700">Title</th>
+                        <th class="p-3 font-semibold text-gray-700">Status</th>
+                        <th class="p-3 font-semibold text-gray-700">Submitted</th>
+                        <th class="p-3 font-semibold text-gray-700">Days Pending</th>
+                        <th class="p-3 font-semibold text-gray-700 text-center">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <% if (assignments.length===0) { %>
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-gray-500">
+                                No assignments found with the current filters.
+                            </td>
+                        </tr>
+                        <% } else { %>
+                            <% assignments.forEach(a=> { %>
+                                <tr class="border-b hover:bg-gray-50 transition">
+
+                                    <td class="p-3 text-gray-800">
+                                        <%= a.studentId.name %>
+                                    </td>
+
+                                    <td class="p-3 font-medium">
+                                        <%= a.title %>
+                                            <% if (a.history && a.history.some(h=> h.action === 'resubmitted')) { %>
+                                                <span
+                                                    class="ml-2 px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded-full">
+                                                    🔄 Resubmitted
+                                                </span>
+                                                <% } %>
+                                    </td>
+
+                                    <td class="p-3">
+                                        <% if (a.status==='submitted' ) { %>
+                                            <span
+                                                class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                                📝 Pending
+                                            </span>
+                                            <% } else if (a.status==='draft' ) { %>
+                                                <span
+                                                    class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                                                    📄 Draft
+                                                </span>
+                                                <% } else if (a.status==='approved' ) { %>
+                                                    <span
+                                                        class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                                                        ✅ Approved
+                                                    </span>
+                                                    <% } else if (a.status==='rejected' ) { %>
+                                                        <span
+                                                            class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                                                            ❌ Rejected
+                                                        </span>
+                                                        <% } %>
+                                    </td>
+
+                                    <td class="p-3 text-gray-600">
+                                        <%= a.createdAt.toLocaleDateString('en-US', { month: 'short' , day: 'numeric' ,
+                                            year: 'numeric' }) %>
+                                    </td>
+
+                                    <td class="p-3">
+                                        <% const daysPending=Math.floor((Date.now() - a.createdAt) / (1000*60*60*24));
+                                            let colorClass='text-green-600' ; if (daysPending> 7) colorClass =
+                                            'text-red-600 font-bold';
+                                            else if (daysPending > 3) colorClass = 'text-orange-600';
+                                            %>
+                                            <span class="<%= colorClass %>">
+                                                <%= daysPending %> days
+                                            </span>
+                                    </td>
+
+                                    <td class="p-3 text-center">
+                                        <div class="flex gap-2 justify-center">
+                                            <!-- Review Button - Show for submitted AND draft status -->
+                                            <% if (a.status==="submitted" ) { %>
+                                                <a href="/professor/review/<%= a._id %>"
+                                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                                    Review
+                                                </a>
+                                                <% } else { %>
+                                                    <a href="/professor/details/<%= a._id %>"
+                                                        class="px-4 py-2 bg-gray-700 text-white rounded-md">
+                                                        Details
+                                                    </a>
+                                                    <% } %>
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                <% }) %>
+                                    <% } %>
+                </tbody>
+
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <% if (totalPages> 1) { %>
+            <div class="flex justify-center gap-3 mt-6">
+                <% if (page> 1) { %>
+                    <a href="?page=<%= page - 1 %>&status=<%= statusFilter %>&search=<%= searchQuery %>&sort=<%= sortBy %>"
+                        class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                        Previous
+                    </a>
+                    <% } %>
+
+                        <% for (let i=1; i <=totalPages; i++) { %>
+                            <a href="?page=<%= i %>&status=<%= statusFilter %>&search=<%= searchQuery %>&sort=<%= sortBy %>"
+                                class="px-4 py-2 <%= i === page ? 'bg-indigo-600 text-white' : 'bg-gray-200' %> rounded hover:bg-gray-300">
+                                <%= i %>
+                            </a>
+                            <% } %>
+
+                                <% if (page < totalPages) { %>
+                                    <a href="?page=<%= page + 1 %>&status=<%= statusFilter %>&search=<%= searchQuery %>&sort=<%= sortBy %>"
+                                        class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                                        Next
+                                    </a>
+                                    <% } %>
+            </div>
+            <% } %>
+
+    </div>
+
+    <%- include('../partials/professor/footer') %>

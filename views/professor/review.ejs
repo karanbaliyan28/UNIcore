@@ -93,7 +93,7 @@
 
 
                     <!-- PDF VIEWER -->
-                    <div class="bg-white rounded-2xl shadow-md p-6" style="height: 500px;">
+                    <div class="bg-white rounded-2xl shadow-md p-6" style="height: 727px;">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-xl font-bold text-gray-900">Assignment Document</h2>
 
@@ -112,7 +112,7 @@
                         <% if (assignment.fileUrl) { %>
                             <!-- FULL PREMIUM VIEWER -->
                             <div class="border rounded-xl bg-gray-50 shadow-inner overflow-hidden"
-                                style="height: 380px;">
+                                style="height: 580px;">
                                 <iframe src="/uploads/<%= assignment.fileUrl %>#toolbar=1" class="w-full h-full"
                                     style="border:none;">
                                 </iframe>
@@ -171,8 +171,8 @@
 
                         <h2 class="text-xl font-bold text-gray-900 mb-6">Submit Review</h2>
 
-                        <form action="/professor/review/<%= assignment._id %>" method="POST" id="reviewForm"
-                            class="space-y-6">
+                        <form action="/professor/review/<%= assignment._id %>" method="POST"
+                            enctype="multipart/form-data" id="reviewForm" class="space-y-6">
 
                             <!-- Remarks -->
                             <div>
@@ -182,12 +182,79 @@
                                 <p class="text-xs text-gray-500 mt-1">Minimum 10 characters</p>
                             </div>
 
-                            <!-- Signature -->
+                            <!-- Signature Type Selector -->
                             <div>
-                                <label class="text-sm font-semibold text-gray-700 mb-2 block">Your Signature *</label>
-                                <input name="signature" required
+                                <label class="text-sm font-semibold text-gray-700 mb-2 block">Signature Method *</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button type="button" onclick="selectSignatureType('text')" id="textSigBtn"
+                                        class="signature-type-btn active px-4 py-3 border-2 border-indigo-500 bg-indigo-50 rounded-lg font-medium text-indigo-700 transition">
+                                        <svg class="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        Write Text
+                                    </button>
+                                    <button type="button" onclick="selectSignatureType('image')" id="imageSigBtn"
+                                        class="signature-type-btn px-4 py-3 border-2 border-gray-300 bg-white rounded-lg font-medium text-gray-700 hover:border-indigo-300 transition">
+                                        <svg class="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        Upload Image
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Text Signature Input -->
+                            <div id="textSignatureSection">
+                                <label class="text-sm font-semibold text-gray-700 mb-2 block">Your Signature (Text)
+                                    *</label>
+                                <input name="signature" id="signatureTextInput"
                                     class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-indigo-500"
                                     placeholder="Full name">
+                                <div class="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                    <p class="text-xs text-gray-500 mb-2">Preview:</p>
+                                    <p id="signaturePreview"
+                                        class="text-3xl text-indigo-800 transform -rotate-2 min-h-[40px]"
+                                        style="font-family: 'Great Vibes', cursive;">
+                                        Your signature will appear here
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Image Signature Upload -->
+                            <div id="imageSignatureSection" style="display: none;">
+                                <label class="text-sm font-semibold text-gray-700 mb-2 block">Upload Signature Image
+                                    *</label>
+                                <div
+                                    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition">
+                                    <input type="file" name="signatureImage" id="signatureImageInput"
+                                        accept="image/png,image/jpeg,image/jpg" class="hidden"
+                                        onchange="previewSignatureImage(event)">
+                                    <label for="signatureImageInput" class="cursor-pointer">
+                                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        <p class="text-sm text-gray-600 font-medium">Click to upload signature image</p>
+                                        <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB</p>
+                                    </label>
+                                </div>
+                                <div id="imagePreviewContainer" class="mt-3 hidden">
+                                    <p class="text-xs text-gray-500 mb-2">Preview:</p>
+                                    <div
+                                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
+                                        <img id="signatureImagePreview" class="h-16 max-w-[200px] object-contain"
+                                            alt="Signature preview">
+                                        <button type="button" onclick="clearSignatureImage()"
+                                            class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Buttons -->
@@ -213,27 +280,101 @@
                     </div>
                 </div>
 
+                <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+
             </div>
 
         </div>
     </div>
 
     <script>
-        // Validation
+        // Validation   
+        function selectSignatureType(type) {
+            currentSignatureType = type;
+
+            const textBtn = document.getElementById('textSigBtn');
+            const imageBtn = document.getElementById('imageSigBtn');
+            const textSection = document.getElementById('textSignatureSection');
+            const imageSection = document.getElementById('imageSignatureSection');
+            const textInput = document.getElementById('signatureTextInput');
+            const imageInput = document.getElementById('signatureImageInput');
+
+            if (type === 'text') {
+                textBtn.classList.add('active', 'border-indigo-500', 'bg-indigo-50', 'text-indigo-700');
+                textBtn.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
+                imageBtn.classList.remove('active', 'border-indigo-500', 'bg-indigo-50', 'text-indigo-700');
+                imageBtn.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
+
+                textSection.style.display = 'block';
+                imageSection.style.display = 'none';
+                textInput.required = true;
+                imageInput.required = false;
+                imageInput.value = '';
+            } else {
+                imageBtn.classList.add('active', 'border-indigo-500', 'bg-indigo-50', 'text-indigo-700');
+                imageBtn.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
+                textBtn.classList.remove('active', 'border-indigo-500', 'bg-indigo-50', 'text-indigo-700');
+                textBtn.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
+
+                textSection.style.display = 'none';
+                imageSection.style.display = 'block';
+                textInput.required = false;
+                imageInput.required = true;
+            }
+        }
+
+        // Live preview for text signature
+        document.getElementById('signatureTextInput')?.addEventListener('input', function (e) {
+            const preview = document.getElementById('signaturePreview');
+            preview.textContent = e.target.value || 'Your signature will appear here';
+        });
+
+        // Preview uploaded signature image
+        function previewSignatureImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('signatureImagePreview').src = e.target.result;
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearSignatureImage() {
+            document.getElementById('signatureImageInput').value = '';
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+        }
+
+        // Form validation
         document.getElementById("reviewForm").addEventListener("submit", function (e) {
             const remark = document.querySelector("textarea[name='remark']").value.trim();
-            const signature = document.querySelector("input[name='signature']").value.trim();
 
             if (remark.length < 10) {
                 e.preventDefault();
                 alert("Please provide at least 10 characters in remarks.");
+                return;
             }
 
-            if (signature.length < 2) {
-                e.preventDefault();
-                alert("Signature cannot be empty.");
+            if (currentSignatureType === 'text') {
+                const signature = document.getElementById('signatureTextInput').value.trim();
+                if (signature.length < 2) {
+                    e.preventDefault();
+                    alert("Signature cannot be empty.");
+                    return;
+                }
+            } else {
+                const imageFile = document.getElementById('signatureImageInput').files[0];
+                if (!imageFile) {
+                    e.preventDefault();
+                    alert("Please upload a signature image.");
+                    return;
+                }
             }
         });
+    
     </script>
 
     <%- include('../partials/professor/footer') %>

@@ -8,13 +8,11 @@ import jwt from "jsonwebtoken";
 import connectDB from "./config/db.config.js";
 import authRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
-import departmentRoutes from "./routes/department.routes.js";
+import departmentRoutes from "./routes/admin.routes.js";
 import userRoutes from "./routes/user.routes.js";
 
 dotenv.config();
 connectDB();
-
-console.log("GEMINI KEY:", process.env.GEMINI_API_KEY);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,17 +45,17 @@ app.get("/", (req, res) => {
   return res.redirect("/auth/login");
 });
 
-// Routes
+//admin Routes
 app.use("/auth", authRoutes);
 app.use("/admin", adminRoutes);
 app.use("/admin/departments", departmentRoutes);
 app.use("/admin/users", userRoutes);
 
-// Student
-import studentRoutes from "./routes/studentAssignments.routes.js";
+// Student Routes
+import studentRoutes from "./routes/student.routes.js";
 app.use("/student", studentRoutes);
 
-// Professor
+// Professor Routes
 import professorRoutes from "./routes/professor.routes.js";
 app.use("/professor", professorRoutes);
 

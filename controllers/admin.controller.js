@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 
 // Render Add Department Page
 export const getAddDepartment = (req, res) => {
-  res.render("add-department", {
+  res.render("admin/add-department", {
     title: "Add Department",
     error: null,
     success: null,
@@ -17,7 +17,7 @@ export const postAddDepartment = async (req, res) => {
 
     // Validate required fields 
     if (!name || !programType || !address) {
-      return res.render("add-department", {
+      return res.render("admin/add-department", {
         title: "Add Department",
         error: "All fields are required!",
         success: null,
@@ -27,7 +27,7 @@ export const postAddDepartment = async (req, res) => {
     // Check for duplicates
     const existing = await Department.findOne({ name });
     if (existing) {
-      return res.render("add-department", {
+      return res.render("admin/add-department", {
         title: "Add Department",
         error: "Department with this name already exists!",
         success: null,
@@ -47,7 +47,7 @@ export const postAddDepartment = async (req, res) => {
     res.redirect("/admin/departments?success=Department created successfully!");
   } catch (err) {
     console.error("Error creating department:", err);
-    res.render("add-department", {
+    res.render("admin/add-department", {
       title: "Add Department",
       error: "Something went wrong. Please try again!",
       success: null,
@@ -94,7 +94,7 @@ export const getAllDepartments = async (req, res) => {
       })
     );
 
-    res.render("departments", {
+    res.render("admin/departments", {
       title: "Departments",
       departments: departmentsWithCount,
       success: req.query.success || null,
@@ -119,7 +119,7 @@ export const getEditDepartment = async (req, res) => {
       return res.redirect("/admin/departments?error=Department not found");
     }
 
-    res.render("edit-department", {
+    res.render("admin/edit-department", {
       title: "Edit Department",
       department,
       error: null,
@@ -139,7 +139,7 @@ export const postEditDepartment = async (req, res) => {
     // Validate required fields
     if (!name || !programType || !address) {
       const department = await Department.findById(departmentId);
-      return res.render("edit-department", {
+      return res.render("admin/edit-department", {
         title: "Edit Department",
         department,
         error: "All fields are required!",
@@ -154,7 +154,7 @@ export const postEditDepartment = async (req, res) => {
 
     if (existing) {
       const department = await Department.findById(departmentId);
-      return res.render("edit-department", {
+      return res.render("admin/edit-department", {
         title: "Edit Department",
         department,
         error: "Department with this name already exists!",
@@ -171,7 +171,7 @@ export const postEditDepartment = async (req, res) => {
   } catch (err) {
     console.error("Error updating department:", err);
     const department = await Department.findById(req.params.id);
-    res.render("edit-department", {
+    res.render("admin/edit-department", {
       title: "Edit Department",
       department,
       error: "Something went wrong. Please try again!",
@@ -205,5 +205,28 @@ export const deleteDepartment = async (req, res) => {
   } catch (err) {
     console.error("Error deleting department:", err);
     res.redirect("/admin/departments?error=Something went wrong");
+  }
+};
+
+// Admin Dashboard
+
+export const getDashboard = async (req, res) => {
+  try {
+    const departmentCount = await Department.countDocuments();
+    const userCount = await User.countDocuments();
+    const studentCount = await User.countDocuments({ role: "student" });
+    const professorCount = await User.countDocuments({ role: "professor" });
+    const hodCount = await User.countDocuments({ role: "hod" });
+    res.render("admin/admin-dashboard", {
+      admin: req.admin,
+      departmentCount,
+      userCount,
+      studentCount,
+      professorCount,
+      hodCount,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
   }
 };

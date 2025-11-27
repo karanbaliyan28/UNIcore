@@ -6,7 +6,18 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ["student", "professor", "hod"], required: true },
-  department: { type: String }
+  department: { type: String },
+  reviewOtp: { type: String },
+  reviewOtpExpires: { type: Date },
+
+  // Temporary holding area for the review data while waiting for OTP
+  tempReviewData: {
+    assignmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Assignment" },
+    decision: String,
+    remark: String,
+    signature: String,       // Text signature
+    signatureImage: String   // NEW: Path to uploaded signature image
+  }
 });
 
 userSchema.pre("save", async function (next) {

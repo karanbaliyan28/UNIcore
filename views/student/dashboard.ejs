@@ -1,20 +1,6 @@
-<%- include('./partials/student/header.ejs') %>
+<%- include('../partials/student/header.ejs') %>
 
     <div class="p-6 max-w-7xl mx-auto">
-
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-bold">Student Dashboard</h2>
-            <a href="/student/notifications"
-                class="relative px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                🔔 Notifications
-                <% if (unreadNotifications> 0) { %>
-                    <span
-                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center">
-                        <%= unreadNotifications %>
-                    </span>
-                    <% } %>
-            </a>
-        </div>
 
         <!-- Status Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
@@ -67,41 +53,58 @@
 
         <!-- Filters and Search -->
         <div class="bg-white shadow rounded-xl p-6 mb-6">
-            <form method="GET" action="/student/dashboard" class="flex flex-wrap gap-4">
+            <form id="studentFilterForm" action="/student/dashboard" method="GET"
+                class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
                 <!-- Search -->
-                <div class="flex-1 min-w-[250px]">
-                    <input type="text" name="search" value="<%= searchQuery %>" placeholder="Search by title..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Search by Title
+                    </label>
+                    <div class="relative">
+                        <input id="searchInput" type="text" name="search" value="<%= searchQuery || '' %>"
+                            placeholder="Type to search assignments..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
+                 focus:outline-none focus:ring-2 focus:ring-indigo-500
+                 transition-all duration-200" />
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Status Filter -->
-                <select name="status"
-                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                    <option value="all" <%=statusFilter==='all' ? 'selected' : '' %>>All Status</option>
-                    <option value="draft" <%=statusFilter==='draft' ? 'selected' : '' %>>Draft</option>
-                    <option value="submitted" <%=statusFilter==='submitted' ? 'selected' : '' %>>Submitted</option>
-                    <option value="approved" <%=statusFilter==='approved' ? 'selected' : '' %>>Approved</option>
-                    <option value="rejected" <%=statusFilter==='rejected' ? 'selected' : '' %>>Rejected</option>
-                </select>
+                <!-- Status -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Filter by Status
+                    </label>
+                    <select id="statusFilter" name="status" class="w-full px-4 py-3 border border-gray-300 rounded-xl
+               focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="all">All</option>
+                        <option value="draft" <%=statusFilter==='draft' ?'selected':''%>>Draft</option>
+                        <option value="submitted" <%=statusFilter==='submitted' ?'selected':''%>>Submitted</option>
+                        <option value="approved" <%=statusFilter==='approved' ?'selected':''%>>Approved</option>
+                        <option value="rejected" <%=statusFilter==='rejected' ?'selected':''%>>Rejected</option>
+                    </select>
+                </div>
 
-                <!-- Sort By -->
-                <select name="sort"
-                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                    <option value="newest" <%=sortBy==='newest' ? 'selected' : '' %>>Newest First</option>
-                    <option value="oldest" <%=sortBy==='oldest' ? 'selected' : '' %>>Oldest First</option>
-                    <option value="title" <%=sortBy==='title' ? 'selected' : '' %>>Title (A-Z)</option>
-                </select>
-
-                <!-- Buttons -->
-                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                    🔍 Apply
-                </button>
-                <a href="/student/dashboard" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
-                    Clear
-                </a>
+                <!-- Sort -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Sort By
+                    </label>
+                    <select id="sortFilter" name="sort" class="w-full px-4 py-3 border border-gray-300 rounded-xl
+               focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="newest">Newest</option>
+                        <option value="oldest" <%=sortBy==='oldest' ?'selected':''%>>Oldest</option>
+                        <option value="title" <%=sortBy==='title' ?'selected':''%>>Title (A–Z)</option>
+                    </select>
+                </div>
             </form>
         </div>
+
 
         <!-- Recent Submissions Table -->
         <div class="bg-white shadow rounded-xl overflow-hidden">
@@ -221,5 +224,5 @@
             <% } %>
 
     </div>
-
-    <%- include('./partials/student/footer') %>
+    <script src="../../public/js/student/dashboard.js"></script>
+    <%- include('../partials/student/footer') %>

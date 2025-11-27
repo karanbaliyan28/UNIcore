@@ -1,0 +1,144 @@
+<%- include('../partials/professor/header') %>
+
+    <style>
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .float-animation {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Glass Effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+        }
+
+        /* Input Styling */
+        .otp-input:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+    </style>
+
+    <div class="min-h-screen gradient-bg flex items-center justify-center p-4 relative overflow-none">
+
+        <div
+            class="absolute top-1/4 left-1/4 w-64 h-64 bg-indigo-400 rounded-full mix-blend-multiply filter blur-2xl opacity-20 float-animation">
+        </div>
+        <div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-2xl opacity-20 float-animation"
+            style="animation-delay: 1s;"></div>
+
+        <div class="glass-card w-full max-w-md rounded-2xl shadow-2xl p-6 relative z-10 animate-fadeInUp">
+
+            <div class="text-center mb-6">
+                <div
+                    class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 mb-3 shadow-sm">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Verify Signature</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    OTP sent to <span class="font-semibold text-indigo-600">
+                        <%= email %>
+                    </span>
+                </p>
+            </div>
+
+            <% if (typeof error !=='undefined' ) { %>
+                <div
+                    class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-4 text-center animate-pulse">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <form action="/professor/review/verify-otp" method="POST" id="otpForm" class="space-y-5">
+
+                        <div class="relative">
+                            <input id="otp" name="otp" type="text" required
+                                class="otp-input block w-full px-4 py-3 text-center text-2xl font-bold tracking-[0.5em] text-gray-800 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                placeholder="••••••" maxlength="6" autocomplete="off" inputmode="numeric"
+                                pattern="[0-9]{6}">
+
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <span id="timer"
+                                    class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">10:00</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submitBtn"
+                            class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all hover:scale-[1.02]">
+                            Verify & Approve
+                        </button>
+                    </form>
+
+                    <div class="mt-6 pt-4 border-t border-gray-100 grid grid-cols-2 gap-3">
+                        <button onclick="resendOTP()" id="resendBtn" disabled
+                            class="flex items-center justify-center px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span id="resendText">Resend (<span id="resendTimer">60</span>s)</span>
+                        </button>
+
+                        <a href="/professor/dashboard"
+                            class="flex items-center justify-center px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 transition-all">
+                            Cancel
+                        </a>
+                    </div>
+
+                    <p class="text-[10px] text-center text-gray-400 mt-4">
+                        Secured by UNICore • OTP expires in 10 minutes
+                    </p>
+        </div>
+    </div>
+
+  <script src="../../public/js/professor/otp.js"></script>
+
+    <%- include('../partials/professor/footer') %>

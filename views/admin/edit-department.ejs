@@ -1,10 +1,12 @@
-<%- include('./partials/layout.ejs', { title: 'Edit Department' , body: ` <div class="max-w-2xl mx-auto">
+<%- include('../partials/admin/header', { title: 'Edit Department' }) %>
+
+<div class="max-w-2xl mx-auto">
     <div class="mb-8">
         <h2 class="text-3xl font-bold text-gray-800">Edit Department</h2>
         <p class="text-gray-600 mt-2">Update department information</p>
     </div>
 
-    ${error ? `
+    <% if (typeof error !== 'undefined' && error) { %>
     <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-pulse">
         <div class="flex items-center">
             <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -12,14 +14,13 @@
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                     clip-rule="evenodd"></path>
             </svg>
-            <p class="text-red-700 font-medium">${error}</p>
+            <p class="text-red-700 font-medium"><%= error %></p>
         </div>
     </div>
-    ` : ''}
+    <% } %>
 
     <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-        <form action="/admin/departments/edit/${department._id}" method="POST" class="space-y-6">
-            <!-- Department Name -->
+        <form action="/admin/departments/edit/<%= department._id %>" method="POST" class="space-y-6">
             <div>
                 <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
                     Department Name <span class="text-red-500">*</span>
@@ -32,13 +33,12 @@
                             </path>
                         </svg>
                     </div>
-                    <input id="name" name="name" type="text" value="${department.name}"
+                    <input id="name" name="name" type="text" value="<%= department.name %>"
                         placeholder="e.g., Computer Science & Engineering" required
                         class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" />
                 </div>
             </div>
 
-            <!-- Program Type -->
             <div>
                 <label for="programType" class="block text-sm font-semibold text-gray-700 mb-2">
                     Program Type <span class="text-red-500">*</span>
@@ -47,34 +47,25 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M12 14l9-5-9-5-9 5 9 5z"></path>
-                            <path
-                                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z">
-                            </path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222">
-                            </path>
+                            <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
                         </svg>
                     </div>
                     <select id="programType" name="programType" required
                         class="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 appearance-none bg-white">
                         <option value="">Select Program Type</option>
-                        <option value="UG" ${department.programType==='UG' ? 'selected' : '' }>UG (Under Graduate)
-                        </option>
-                        <option value="PG" ${department.programType==='PG' ? 'selected' : '' }>PG (Post Graduate)
-                        </option>
-                        <option value="Research" ${department.programType==='Research' ? 'selected' : '' }>Research
-                        </option>
+                        <option value="UG" <%= department.programType === 'UG' ? 'selected' : '' %>>UG (Under Graduate)</option>
+                        <option value="PG" <%= department.programType === 'PG' ? 'selected' : '' %>>PG (Post Graduate)</option>
+                        <option value="Research" <%= department.programType === 'Research' ? 'selected' : '' %>>Research</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
-                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <!-- Address -->
             <div>
                 <label for="address" class="block text-sm font-semibold text-gray-700 mb-2">
                     Department Address <span class="text-red-500">*</span>
@@ -82,27 +73,22 @@
                 <div class="relative">
                     <div class="absolute top-3 left-0 pl-3 pointer-events-none">
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
-                            </path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                     </div>
                     <textarea id="address" name="address" rows="3" placeholder="e.g., Block A, 3rd Floor, Room 301"
                         required
-                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 resize-none">${department.address}</textarea>
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 resize-none"><%= department.address %></textarea>
                 </div>
             </div>
 
-            <!-- Submit Buttons -->
             <div class="flex gap-4 pt-4">
                 <button type="submit"
                     class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]">
                     <span class="flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
-                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                         Update Department
                     </span>
@@ -114,5 +100,6 @@
             </div>
         </form>
     </div>
-    </div>
-    `}) %>
+</div>
+
+<%- include('../partials/admin/footer') %>

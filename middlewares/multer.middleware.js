@@ -45,3 +45,19 @@ export const uploadMultiple = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB per file
   fileFilter,
 }).array("files", 5); // Max 5 files
+
+// 4. NEW: For Signature Uploads (Images Only)
+// Image Only Filter (For Signatures)
+function imageFilter(req, file, cb) {
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only .png, .jpg, and .jpeg formats allowed for signatures"), false);
+  }
+}
+export const uploadSignature = multer({
+  storage: diskStorage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit for signatures
+  fileFilter: imageFilter,
+}).single("signatureImage");

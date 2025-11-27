@@ -34,7 +34,8 @@ const assignmentSchema = new mongoose.Schema(
         remark: { type: String },
         date: { type: Date, default: Date.now },
         reviewerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        signature: { type: String },
+        signature: { type: String },      // Text version
+        signatureImage: { type: String }   // NEW: Image version
       },
     ],
   },

@@ -1,11 +1,11 @@
-<%- include('./partials/layout.ejs', { title: 'Admin Dashboard' , body: ` <div class="mb-8">
-  <h2 class="text-3xl font-bold text-gray-800 mb-2">Dashboard Overview</h2>
-  <p class="text-gray-600">Welcome back! Here's what's happening in your institution.</p>
+<%- include('../partials/admin/header', { title: 'Admin Dashboard' }) %>
+
+  <div class="mb-8">
+    <h2 class="text-3xl font-bold text-gray-800 mb-2">Dashboard Overview</h2>
+    <p class="text-gray-600">Welcome back! Here's what's happening in your institution.</p>
   </div>
 
-  <!-- Top Stats Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
-    <!-- Departments Card -->
     <div
       class="group bg-white p-8 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-indigo-200">
       <div class="flex items-center justify-between mb-4">
@@ -21,11 +21,11 @@
       </div>
       <h3 class="text-lg font-semibold text-gray-600 mb-2">Total Departments</h3>
       <p class="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
-        ${departmentCount}</p>
+        <%= departmentCount %>
+      </p>
       <p class="text-gray-500 text-sm">Academic departments</p>
     </div>
 
-    <!-- Users Card -->
     <div
       class="group bg-white p-8 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-green-200">
       <div class="flex items-center justify-between mb-4">
@@ -41,14 +41,13 @@
       </div>
       <h3 class="text-lg font-semibold text-gray-600 mb-2">Total Users</h3>
       <p class="text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
-        ${userCount}</p>
+        <%= userCount %>
+      </p>
       <p class="text-gray-500 text-sm">Registered users</p>
     </div>
   </div>
 
-  <!-- User Role Stats Grid -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <!-- Students Card -->
     <div
       class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200">
       <div class="flex items-center justify-between mb-3">
@@ -68,10 +67,10 @@
       </div>
       <h3 class="text-sm font-semibold text-gray-600 mb-1">Total Students</h3>
       <p class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-        ${studentCount || 0}</p>
+        <%= studentCount || 0 %>
+      </p>
     </div>
 
-    <!-- Professors Card -->
     <div
       class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-amber-200">
       <div class="flex items-center justify-between mb-3">
@@ -86,10 +85,10 @@
       </div>
       <h3 class="text-sm font-semibold text-gray-600 mb-1">Total Professors</h3>
       <p class="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-        ${professorCount || 0}</p>
+        <%= professorCount || 0 %>
+      </p>
     </div>
 
-    <!-- HODs Card -->
     <div
       class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200">
       <div class="flex items-center justify-between mb-3">
@@ -105,11 +104,11 @@
       </div>
       <h3 class="text-sm font-semibold text-gray-600 mb-1">Total HODs</h3>
       <p class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-        ${hodCount || 0}</p>
+        <%= hodCount || 0 %>
+      </p>
     </div>
   </div>
 
-  <!-- Quick Actions -->
   <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
     <h3 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -157,4 +156,5 @@
       </a>
     </div>
   </div>
-  `}) %>
+
+  <%- include('../partials/admin/footer') %>

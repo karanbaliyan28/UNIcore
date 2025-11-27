@@ -49,7 +49,7 @@ export const getUsers = async (req, res) => {
     // Get all departments for filter dropdown
     const departments = await Department.find().select("name").lean();
 
-    res.render("users", {
+    res.render("admin/users", {
       title: "Users",
       users,
       departments,
@@ -72,7 +72,7 @@ export const getUsers = async (req, res) => {
 export const renderAddUserForm = async (req, res) => {
   try {
     const departments = await Department.find().select("name").lean();
-    res.render("add-user", {
+    res.render("admin/add-user", {
       title: "Add User",
       departments,
       error: null,
@@ -90,7 +90,7 @@ export const addUser = async (req, res) => {
 
     if (!name || !email || !password || !role || !department) {
       const departments = await Department.find().select("name").lean();
-      return res.render("add-user", {
+      return res.render("admin/add-user", {
         title: "Add User",
         departments,
         error: "All fields are required!",
@@ -141,7 +141,7 @@ export const renderEditUserForm = async (req, res) => {
 
     const departments = await Department.find().select("name").lean();
 
-    res.render("edit-user", {
+    res.render("admin/edit-user", {
       title: "Edit User",
       user,
       departments,
@@ -163,7 +163,7 @@ export const updateUser = async (req, res) => {
     if (!name || !email || !department) {
       const user = await User.findById(userId).select("-password").lean();
       const departments = await Department.find().select("name").lean();
-      return res.render("edit-user", {
+      return res.render("admin/edit-user", {
         title: "Edit User",
         user,
         departments,
@@ -177,7 +177,7 @@ export const updateUser = async (req, res) => {
     if (existing) {
       const user = await User.findById(userId).select("-password").lean();
       const departments = await Department.find().select("name").lean();
-      return res.render("edit-user", {
+      return res.render("admin/edit-user", {
         title: "Edit User",
         user,
         departments,
@@ -189,7 +189,7 @@ export const updateUser = async (req, res) => {
     const oldUser = await User.findById(userId).lean();
 
     // Apply updates
-    const updateData = { name, email, role, department };
+    const updateData = { name, email, department };
 
     if (password && password.trim() !== "") {
       const user = await User.findById(userId);
@@ -215,7 +215,7 @@ export const updateUser = async (req, res) => {
     console.error("Error updating user:", err);
     const user = await User.findById(req.params.id).select("-password").lean();
     const departments = await Department.find().select("name").lean();
-    res.render("edit-user", {
+    res.render("admin/edit-user", {
       title: "Edit User",
       user,
       departments,

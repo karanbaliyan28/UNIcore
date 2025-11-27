@@ -111,7 +111,7 @@ export const getDashboard = async (req, res) => {
       read: false,
     });
 
-    res.render("student-dashboard", {
+    res.render("student/dashboard", {
       counts: statusCounts,
       assignments,
       page,
@@ -137,7 +137,7 @@ export const getUploadForm = async (req, res) => {
   });
 
   console.log("FOUND PROFESSORS:", professors);
-  res.render("upload-assignment", { professors });
+  res.render("student/upload-single", { professors });
 };
 
 // Single Upload Handler
@@ -176,7 +176,7 @@ export const getBulkUploadForm = async (req, res) => {
     department: req.user.department,
   });
 
-  res.render("bulk-upload", { professors });
+  res.render("student/bulk-upload", { professors });
 };
 
 // Bulk Upload Handler
@@ -250,7 +250,7 @@ export const getMyAssignments = async (req, res) => {
     const totalAssignments = await Assignment.countDocuments(query);
     const totalPages = Math.ceil(totalAssignments / limit);
 
-    res.render("my-assignments", {
+    res.render("student/my-assignments", {
       assignments,
       page,
       totalPages,
@@ -282,7 +282,7 @@ export const getAssignmentDetails = async (req, res) => {
 
     console.log("Assignment fileUrl:", assignment.fileUrl);
 
-    res.render("assignment-details", { assignment, professors });
+    res.render("student/details", { assignment, professors });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error loading assignment details");

@@ -10,6 +10,7 @@ import {
   getNotifications,
   markNotificationRead,
   markAllNotificationsRead,
+  forwardAssignment,
 } from "../controllers/professor.controller.js";
 
 const router = express.Router();
@@ -47,6 +48,17 @@ router.post(
   protect,
   professorOnly,
   markAllNotificationsRead
+);
+
+//================================
+//Forwarding Assignments to HODs
+//================================
+
+router.post(
+  "/assignments/:id/forward",
+  protect,
+  professorOnly,
+  forwardAssignment
 );
 
 export default router;

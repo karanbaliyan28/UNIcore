@@ -1,5 +1,5 @@
 import express from "express";
-import { protect ,adminOnly } from "../middlewares/auth.middleware.js";
+import { protect, adminOnly } from "../middlewares/auth.middleware.js";
 import {
   getDashboard,
   getAddDepartment,
@@ -12,12 +12,7 @@ import {
 
 const router = express.Router();
 
-
-
 router.get("/dashboard", protect, adminOnly, getDashboard);
-
-
-
 
 // Show all departments (with pagination, search, filter)
 router.get("/", protect, adminOnly, getAllDepartments);
@@ -36,8 +31,5 @@ router.post("/edit/:id", protect, adminOnly, postEditDepartment);
 
 // Handle department deletion
 router.post("/delete/:id", protect, adminOnly, deleteDepartment);
-
-
-
 
 export default router;

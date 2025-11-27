@@ -19,7 +19,14 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["submission", "resubmission", "approved", "rejected", "general"],
+      enum: [
+        "submission",
+        "resubmission",
+        "approved",
+        "rejected",
+        "forwarded",
+        "general",
+      ],
       default: "general",
     },
     read: {
@@ -29,7 +36,7 @@ const notificationSchema = new mongoose.Schema(
     },
     sender: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // or Student / Professor model
+      ref: "User",
     },
   },
   { timestamps: true }

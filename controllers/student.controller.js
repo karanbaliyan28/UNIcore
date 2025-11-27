@@ -13,13 +13,9 @@ export const aiCheckAssignment = async (req, res) => {
 
     console.log("FILE RECEIVED:", req.file);
 
-    // Convert buffer to base64
     const base64Data = req.file.buffer.toString("base64");
-
-    // Get the Gemini model
     const model = getModel("gemini-2.0-flash-exp");
 
-    // Generate content with file and prompt
     const result = await model.generateContent([
       {
         inlineData: {
@@ -50,31 +46,25 @@ export const getDashboard = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    // Get filter parameters
     const statusFilter = req.query.status || "all";
     const searchQuery = req.query.search || "";
     const sortBy = req.query.sort || "newest";
 
-    // Build query
     let query = { studentId };
 
-    // Apply status filter
     if (statusFilter !== "all") {
       query.status = statusFilter;
     }
 
-    // Apply search filter
     if (searchQuery) {
       query.title = { $regex: searchQuery, $options: "i" };
     }
 
-    // Count statistics
     const counts = await Assignment.aggregate([
       { $match: { studentId: new mongoose.Types.ObjectId(studentId) } },
       { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);
 
-    // Convert counts to object for easy access
     const statusCounts = {
       draft: 0,
       submitted: 0,
@@ -85,17 +75,14 @@ export const getDashboard = async (req, res) => {
       statusCounts[c._id] = c.count;
     });
 
-    // Pagination
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    // Sorting
-    let sortOptions = { createdAt: -1 }; // newest first by default
+    let sortOptions = { createdAt: -1 };
     if (sortBy === "oldest") sortOptions = { createdAt: 1 };
     if (sortBy === "title") sortOptions = { title: 1 };
 
-    // Get assignments with pagination
     const assignments = await Assignment.find(query)
       .populate("reviewerId", "name department")
       .skip(skip)
@@ -105,7 +92,6 @@ export const getDashboard = async (req, res) => {
     const totalAssignments = await Assignment.countDocuments(query);
     const totalPages = Math.ceil(totalAssignments / limit);
 
-    // Get unread notifications count
     const unreadNotifications = await Notification.countDocuments({
       userId: studentId,
       read: false,
@@ -151,7 +137,6 @@ export const uploadAssignment = async (req, res) => {
 
     console.log("UPLOADED FILE:", req.file);
 
-    // Create assignment with proper file path
     await Assignment.create({
       title,
       description,
@@ -194,8 +179,8 @@ export const bulkUploadAssignments = async (req, res) => {
       category,
       reviewerId,
       studentId: req.user.id,
-      fileUrl: file.filename, // FIXED
-      sender: req.user._id, // OPTIONAL but recommended
+      fileUrl: file.filename,
+      sender: req.user._id,
       status: "draft",
     }));
 
@@ -213,30 +198,24 @@ export const getMyAssignments = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    // Get filter parameters
     const statusFilter = req.query.status || "all";
     const searchQuery = req.query.search || "";
     const sortBy = req.query.sort || "newest";
 
-    // Build query
     let query = { studentId };
 
-    // Apply status filter
     if (statusFilter !== "all") {
       query.status = statusFilter;
     }
 
-    // Apply search filter
     if (searchQuery) {
       query.title = { $regex: searchQuery, $options: "i" };
     }
 
-    // Pagination
     const page = parseInt(req.query.page) || 1;
     const limit = 15;
     const skip = (page - 1) * limit;
 
-    // Sorting
     let sortOptions = { createdAt: -1 };
     if (sortBy === "oldest") sortOptions = { createdAt: 1 };
     if (sortBy === "title") sortOptions = { title: 1 };
@@ -268,24 +247,26 @@ export const getMyAssignments = async (req, res) => {
 export const getAssignmentDetails = async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id)
-      .populate("reviewerId", "name department")
-      .populate("history.reviewerId", "name department");
+      .populate("reviewerId")
+      .populate("history.reviewerId");
 
     if (!assignment || assignment.studentId.toString() !== req.user.id) {
-      return res.status(404).send("Assignment not found");
+      return res.status(404).send("Assignment not found.");
     }
 
     const professors = await User.find({
       role: "professor",
       department: req.user.department,
+    }).select("name email department");
+
+    return res.render("student/details", {
+      assignment,
+      professors,
+      user: req.user,
     });
-
-    console.log("Assignment fileUrl:", assignment.fileUrl);
-
-    res.render("student/details", { assignment, professors });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error loading assignment details");
+    res.status(500).send("Server error");
   }
 };
 
@@ -306,13 +287,21 @@ export const submitAssignment = async (req, res) => {
 
     assignment.status = "submitted";
     assignment.reviewerId = reviewerId;
+
+    // Add submission to history
+    assignment.history.push({
+      action: "submitted",
+      remark: "Assignment submitted for review",
+      date: new Date(),
+    });
+
     await assignment.save();
 
-    // Correct Notification
+    const user = await User.findById(req.user.id);
+
     await Notification.create({
       userId: reviewerId,
-      sender: req.user._id, // <-- MUST ADD
-      message: `New assignment submitted: "${assignment.title}" by ${req.user.fullName}`,
+      message: `New assignment submitted: "${assignment.title}" by ${user.name}`,
       assignmentId: assignment._id,
       type: "submission",
       read: false,
@@ -350,57 +339,52 @@ export const downloadAssignmentFile = async (req, res) => {
   }
 };
 
-// Resubmit Rejected Assignment
+// Resubmit Rejected Assignment - FIXED
 export const resubmitAssignment = async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id);
 
     if (!assignment || assignment.studentId.toString() !== req.user.id) {
-      return res.status(404).send("Assignment not found");
+      return res.status(404).send("Assignment not found.");
     }
 
+    // Check if assignment can be resubmitted
     if (assignment.status !== "rejected") {
       return res
-        .status(403)
+        .status(400)
         .send("Only rejected assignments can be resubmitted.");
     }
 
-    // Save old rejection into history
-    assignment.history.push({
-      action: "rejected",
-      remark: assignment.rejectionRemark || "Rejected previously",
-      reviewerId: assignment.reviewerId,
-      date: new Date(),
-      signature: assignment.reviewerSignature || null,
-    });
-
-    // Add resubmission history entry
-    assignment.history.push({
-      action: "resubmitted",
-      remark: "Student uploaded a new file",
-      reviewerId: assignment.reviewerId,
-      date: new Date(),
-    });
-
-    // Replace file if new one uploaded
+    // Handle file upload if provided
     if (req.file) {
       assignment.fileUrl = req.file.filename;
     }
 
-    // Allow updating description
-    if (req.body.description) {
-      assignment.description = req.body.description;
+    // Get reviewer from form
+    const { reviewerId, remarks } = req.body;
+    if (!reviewerId) {
+      return res.status(400).send("Please select a reviewer.");
     }
 
-    // Reset status to submitted
-    assignment.status = "submitted";
+    // Update assignment
+    assignment.reviewerId = reviewerId;
+    assignment.status = "submitted"; // Change to submitted for review
+    assignment.rejectionRemark = null; // Clear previous rejection remark
+
+    // Add resubmission to history
+    assignment.history.push({
+      action: "resubmitted",
+      remark: remarks || "Assignment resubmitted after revision",
+      date: new Date(),
+    });
 
     await assignment.save();
 
-    // Notify reviewer
+    // Notify the new reviewer
+    const user = await User.findById(req.user.id);
     await Notification.create({
-      userId: assignment.reviewerId,
-      message: `Assignment resubmitted: "${assignment.title}" by ${req.user.name}`,
+      userId: reviewerId,
+      message: `Assignment "${assignment.title}" has been resubmitted by ${user.name}`,
       assignmentId: assignment._id,
       type: "resubmission",
       read: false,
@@ -409,7 +393,7 @@ export const resubmitAssignment = async (req, res) => {
     return res.redirect(`/student/assignments/${assignment._id}`);
   } catch (err) {
     console.error("Resubmit Error:", err);
-    return res.status(500).send("Error during resubmission.");
+    res.status(500).send("Error resubmitting assignment.");
   }
 };
 

@@ -1,27 +1,24 @@
-let searchTimeout;
-
+let timeout;
 const searchInput = document.getElementById("searchInput");
-const statusFilter = document.getElementById("statusFilter");
-const sortFilter = document.getElementById("sortFilter");
+const statusSelect = document.getElementById("statusSelect");
+const sortSelect = document.getElementById("sortSelect");
 
 function applyFilters() {
   const params = new URLSearchParams();
 
   if (searchInput.value.trim()) params.set("search", searchInput.value.trim());
-
-  if (statusFilter.value !== "all") params.set("status", statusFilter.value);
-
-  if (sortFilter.value) params.set("sort", sortFilter.value);
+  if (statusSelect.value !== "all") params.set("status", statusSelect.value);
+  if (sortSelect.value) params.set("sort", sortSelect.value);
 
   window.location.href = "/student/dashboard?" + params.toString();
 }
 
 // Debounced search
 searchInput.addEventListener("input", () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(applyFilters, 500);
+  clearTimeout(timeout);
+  timeout = setTimeout(applyFilters, 500);
 });
 
-// Instant dropdown filters
-statusFilter.addEventListener("change", applyFilters);
-sortFilter.addEventListener("change", applyFilters);
+// Instant apply for dropdowns
+statusSelect.addEventListener("change", applyFilters);
+sortSelect.addEventListener("change", applyFilters);

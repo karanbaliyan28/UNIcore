@@ -12,7 +12,7 @@ const assignmentSchema = new mongoose.Schema(
     fileUrl: { type: String, required: true },
     status: {
       type: String,
-      enum: ["draft", "submitted", "approved", "rejected"],
+      enum: ["draft", "submitted", "approved", "rejected" , "forwarded"],
       default: "draft",
     },
     studentId: {
@@ -24,7 +24,7 @@ const assignmentSchema = new mongoose.Schema(
     reviewerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false,
     },
 
     submittedAt: { type: Date, default: Date.now },

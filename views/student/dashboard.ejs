@@ -1,228 +1,199 @@
-<%- include('../partials/student/header.ejs') %>
+<%- include('../partials/student/header') %>
 
-    <div class="p-6 max-w-7xl mx-auto">
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
 
-        <!-- Status Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <!-- Draft -->
+      <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500 hover:shadow-lg transition">
+        <p class="text-gray-600 font-medium text-sm">Draft</p>
+        <h3 class="text-3xl font-bold text-yellow-600 mt-2"><%= counts.draft %></h3>
+      </div>
 
-            <div class="bg-yellow-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-                <p class="text-gray-600 font-medium">Draft</p>
-                <h3 class="text-3xl font-bold text-yellow-700 mt-2">
-                    <%= counts.draft %>
-                </h3>
-            </div>
+      <!-- Submitted -->
+      <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 hover:shadow-lg transition">
+        <p class="text-gray-600 font-medium text-sm">Under Review</p>
+        <h3 class="text-3xl font-bold text-blue-600 mt-2"><%= counts.submitted %></h3>
+      </div>
 
-            <div class="bg-blue-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-                <p class="text-gray-600 font-medium">Submitted</p>
-                <h3 class="text-3xl font-bold text-blue-700 mt-2">
-                    <%= counts.submitted %>
-                </h3>
-            </div>
+      <!-- Approved -->
+      <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500 hover:shadow-lg transition">
+        <p class="text-gray-600 font-medium text-sm">Approved</p>
+        <h3 class="text-3xl font-bold text-green-600 mt-2"><%= counts.approved %></h3>
+      </div>
 
-            <div class="bg-green-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-                <p class="text-gray-600 font-medium">Approved</p>
-                <h3 class="text-3xl font-bold text-green-700 mt-2">
-                    <%= counts.approved %>
-                </h3>
-            </div>
+      <!-- Rejected -->
+      <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500 hover:shadow-lg transition">
+        <p class="text-gray-600 font-medium text-sm">Rejected</p>
+        <h3 class="text-3xl font-bold text-red-600 mt-2"><%= counts.rejected %></h3>
+      </div>
+    </div>
 
-            <div class="bg-red-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-                <p class="text-gray-600 font-medium">Rejected</p>
-                <h3 class="text-3xl font-bold text-red-700 mt-2">
-                    <%= counts.rejected %>
-                </h3>
-            </div>
-
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+      <form id="filterForm" method="GET" action="/student/dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Search -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Search by Title</label>
+          <input type="text" name="search" id="searchInput" value="<%= searchQuery || '' %>" 
+                 placeholder="Type to search..."
+                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex gap-4 mb-6">
-            <a href="/student/assignments/upload"
-                class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                📤 Upload New Assignment
-            </a>
-            <a href="/student/bulk-upload"
-                class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                📦 Bulk Upload Assignments
-            </a>
-            <a href="/student/assignments"
-                class="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition">
-                📋 View All Assignments
-            </a>
+        <!-- Status Filter -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+          <select name="status" id="statusSelect"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="all" <%= statusFilter === 'all' ? 'selected' : '' %>>All</option>
+            <option value="draft" <%= statusFilter === 'draft' ? 'selected' : '' %>>Draft</option>
+            <option value="submitted" <%= statusFilter === 'submitted' ? 'selected' : '' %>>Under Review</option>
+            <option value="forwarded" <%= statusFilter === 'forwarded' ? 'selected' : '' %>>Forwarded</option>
+            <option value="approved" <%= statusFilter === 'approved' ? 'selected' : '' %>>Approved</option>
+            <option value="rejected" <%= statusFilter === 'rejected' ? 'selected' : '' %>>Rejected</option>
+          </select>
         </div>
 
-        <!-- Filters and Search -->
-        <div class="bg-white shadow rounded-xl p-6 mb-6">
-            <form id="studentFilterForm" action="/student/dashboard" method="GET"
-                class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Sort -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
+          <select name="sort" id="sortSelect"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="newest" <%= sortBy === 'newest' ? 'selected' : '' %>>Newest First</option>
+            <option value="oldest" <%= sortBy === 'oldest' ? 'selected' : '' %>>Oldest First</option>
+            <option value="title" <%= sortBy === 'title' ? 'selected' : '' %>>Title (A-Z)</option>
+          </select>
+        </div>
 
-                <!-- Search -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Search by Title
-                    </label>
-                    <div class="relative">
-                        <input id="searchInput" type="text" name="search" value="<%= searchQuery || '' %>"
-                            placeholder="Type to search assignments..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
-                 focus:outline-none focus:ring-2 focus:ring-indigo-500
-                 transition-all duration-200" />
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
+      </form>
+    </div>
+
+    <!-- Assignments Table -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b">
+        <h3 class="text-xl font-semibold text-gray-900">My Assignments</h3>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gray-100 border-b">
+            <tr>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Title</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Category</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Reviewer</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
+              <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <% if (assignments.length === 0) { %>
+              <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                  No assignments found with the current filters.
+                </td>
+              </tr>
+            <% } else { %>
+              <% assignments.forEach(a => { %>
+                <tr class="hover:bg-gray-50 transition">
+                  <!-- Title -->
+                  <td class="px-6 py-4">
+                    <div class="flex items-center">
+                      <span class="font-medium text-gray-900"><%= a.title %></span>
+                      <% if (a.history && a.history.some(h => h.action === 'resubmitted')) { %>
+                        <span class="ml-2 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
+                          🔄 Resubmitted
+                        </span>
+                      <% } %>
                     </div>
-                </div>
+                  </td>
 
-                <!-- Status -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Filter by Status
-                    </label>
-                    <select id="statusFilter" name="status" class="w-full px-4 py-3 border border-gray-300 rounded-xl
-               focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="all">All</option>
-                        <option value="draft" <%=statusFilter==='draft' ?'selected':''%>>Draft</option>
-                        <option value="submitted" <%=statusFilter==='submitted' ?'selected':''%>>Submitted</option>
-                        <option value="approved" <%=statusFilter==='approved' ?'selected':''%>>Approved</option>
-                        <option value="rejected" <%=statusFilter==='rejected' ?'selected':''%>>Rejected</option>
-                    </select>
-                </div>
+                  <!-- Category -->
+                  <td class="px-6 py-4 text-gray-700"><%= a.category %></td>
 
-                <!-- Sort -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Sort By
-                    </label>
-                    <select id="sortFilter" name="sort" class="w-full px-4 py-3 border border-gray-300 rounded-xl
-               focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="newest">Newest</option>
-                        <option value="oldest" <%=sortBy==='oldest' ?'selected':''%>>Oldest</option>
-                        <option value="title" <%=sortBy==='title' ?'selected':''%>>Title (A–Z)</option>
-                    </select>
-                </div>
-            </form>
-        </div>
+                  <!-- Reviewer -->
+                  <td class="px-6 py-4 text-gray-700">
+                    <%= a.reviewerId ? a.reviewerId.name : 'Not Assigned' %>
+                  </td>
 
-
-        <!-- Recent Submissions Table -->
-        <div class="bg-white shadow rounded-xl overflow-hidden">
-            <div class="px-6 py-4 bg-gray-50 border-b">
-                <h3 class="text-xl font-semibold">Recent Submissions</h3>
-            </div>
-
-            <table class="min-w-full text-left">
-                <thead class="bg-gray-100 border-b">
-                    <tr>
-                        <th class="p-3 font-semibold text-gray-700">Title</th>
-                        <th class="p-3 font-semibold text-gray-700">Category</th>
-                        <th class="p-3 font-semibold text-gray-700">Reviewer</th>
-                        <th class="p-3 font-semibold text-gray-700">Status</th>
-                        <th class="p-3 font-semibold text-gray-700">Date</th>
-                        <th class="p-3 font-semibold text-gray-700 text-center">Action</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <% if (assignments.length===0) { %>
-                        <tr>
-                            <td colspan="6" class="p-8 text-center text-gray-500">
-                                No assignments found. Upload your first assignment!
-                            </td>
-                        </tr>
-                        <% } else { %>
-                            <% assignments.forEach(a=> { %>
-                                <tr class="border-b hover:bg-gray-50 transition">
-
-                                    <td class="p-3 text-gray-800 font-medium">
-                                        <%= a.title %>
-                                            <% if (a.history && a.history.some(h=> h.action === 'resubmitted')) { %>
-                                                <span
-                                                    class="ml-2 px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded-full">
-                                                    🔄 Resubmitted
-                                                </span>
-                                                <% } %>
-                                    </td>
-
-                                    <td class="p-3 text-gray-600">
-                                        <%= a.category || 'Assignment' %>
-                                    </td>
-
-                                    <td class="p-3 text-gray-600">
-                                        <%= a.reviewerId ? a.reviewerId.name : 'Not Assigned' %>
-                                    </td>
-
-                                    <td class="p-3">
-                                        <% if (a.status==='draft' ) { %>
-                                            <span
-                                                class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
-                                                ✏️ Draft
-                                            </span>
-                                            <% } else if (a.status==='submitted' ) { %>
-                                                <span
-                                                    class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                                                    📝 Submitted
-                                                </span>
-                                                <% } else if (a.status==='approved' ) { %>
-                                                    <span
-                                                        class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                                                        ✅ Approved
-                                                    </span>
-                                                    <% } else if (a.status==='rejected' ) { %>
-                                                        <span
-                                                            class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
-                                                            ❌ Rejected
-                                                        </span>
-                                                        <% } %>
-                                    </td>
-
-                                    <td class="p-3 text-gray-600">
-                                        <%= a.createdAt.toLocaleDateString('en-US', { month: 'short' , day: 'numeric' ,
-                                            year: 'numeric' }) %>
-                                    </td>
-
-                                    <td class="p-3 text-center">
-                                        <a href="/student/assignments/<%= a._id %>"
-                                            class="px-4 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
-                                            View
-                                        </a>
-                                    </td>
-
-                                </tr>
-                                <% }) %>
-                                    <% } %>
-                </tbody>
-
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <% if (totalPages> 1) { %>
-            <div class="flex justify-center gap-3 mt-6">
-                <% if (page> 1) { %>
-                    <a href="?page=<%= page - 1 %>&status=<%= statusFilter %>&search=<%= searchQuery %>&sort=<%= sortBy %>"
-                        class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
-                        Previous
-                    </a>
+                  <!-- Status -->
+                  <td class="px-6 py-4">
+                    <% if (a.status === 'draft') { %>
+                      <span class="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                        📄 Draft
+                      </span>
+                    <% } else if (a.status === 'submitted') { %>
+                      <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                        📝 Under Review
+                      </span>
+                    <% } else if (a.status === 'forwarded') { %>
+                      <span class="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                        📤 Forwarded
+                      </span>
+                    <% } else if (a.status === 'approved') { %>
+                      <span class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                        ✅ Approved
+                      </span>
+                    <% } else if (a.status === 'rejected') { %>
+                      <span class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                        ❌ Rejected
+                      </span>
                     <% } %>
+                  </td>
 
-                        <% for (let i=1; i <=totalPages; i++) { %>
-                            <a href="?page=<%= i %>&status=<%= statusFilter %>&search=<%= searchQuery %>&sort=<%= sortBy %>"
-                                class="px-4 py-2 <%= i === page ? 'bg-indigo-600 text-white' : 'bg-gray-200' %> rounded hover:bg-gray-300">
-                                <%= i %>
-                            </a>
-                            <% } %>
+                  <!-- Date -->
+                  <td class="px-6 py-4 text-gray-700 text-sm">
+                    <%= a.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                  </td>
 
-                                <% if (page < totalPages) { %>
-                                    <a href="?page=<%= page + 1 %>&status=<%= statusFilter %>&search=<%= searchQuery %>&sort=<%= sortBy %>"
-                                        class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
-                                        Next
-                                    </a>
-                                    <% } %>
-            </div>
+                  <!-- Action -->
+                  <td class="px-6 py-4 text-center">
+                    <a href="/student/assignments/<%= a._id %>" 
+                       class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+                      View
+                    </a>
+                  </td>
+                </tr>
+              <% }) %>
             <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <div class="px-6 py-4 bg-gray-50 border-t flex justify-center gap-2">
+          <% if (page > 1) { %>
+            <a href="?page=<%= page - 1 %>&status=<%= statusFilter %>&search=<%= searchQuery %>&sort=<%= sortBy %>"
+               class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition text-sm font-medium">
+              Previous
+            </a>
+          <% } %>
+
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <a href="?page=<%= i %>&status=<%= statusFilter %>&search=<%= searchQuery %>&sort=<%= sortBy %>"
+               class="px-4 py-2 rounded-lg text-sm font-medium transition
+                      <%= i === page ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100' %>">
+              <%= i %>
+            </a>
+          <% } %>
+
+          <% if (page < totalPages) { %>
+            <a href="?page=<%= page + 1 %>&status=<%= statusFilter %>&search=<%= searchQuery %>&sort=<%= sortBy %>"
+               class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition text-sm font-medium">
+              Next
+            </a>
+          <% } %>
+        </div>
+      <% } %>
 
     </div>
-    <script src="../../public/js/student/dashboard.js"></script>
-    <%- include('../partials/student/footer') %>
+
+  </div>
+</div>
+
+<script src="../../public/js/student/dashboard.js"></script>
+
+<%- include('../partials/student/footer') %>

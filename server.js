@@ -59,6 +59,10 @@ app.use("/student", studentRoutes);
 import professorRoutes from "./routes/professor.routes.js";
 app.use("/professor", professorRoutes);
 
+// HOD Routes
+import hodRoutes from "./routes/hod.routes.js";
+app.use("/hod", hodRoutes);
+
 // Start server
 app.listen(process.env.PORT, () =>
   console.log(`🚀 Server running on port ${process.env.PORT}`)

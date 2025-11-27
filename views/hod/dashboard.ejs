@@ -1,0 +1,216 @@
+<%- include("../partials/hod/header") %>
+
+    <div class="max-w-7xl mx-auto p-6">
+
+        <!-- ===================== STATUS CARDS ===================== -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6 mb-6">
+
+            <div class="bg-blue-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
+                <p class="text-gray-600 font-medium">Pending Review</p>
+                <h3 class="text-3xl font-bold text-blue-700 mt-2">
+                    <%= pending %>
+                </h3>
+            </div>
+
+            <div class="bg-green-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
+                <p class="text-gray-600 font-medium">Reviewed</p>
+                <h3 class="text-3xl font-bold text-green-700 mt-2">
+                    <%= reviewed %>
+                </h3>
+            </div>
+
+            <!-- ⭐ NEW: REJECTED CARD -->
+            <div class="bg-red-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
+                <p class="text-gray-600 font-medium">Rejected</p>
+                <h3 class="text-3xl font-bold text-red-700 mt-2">
+                    <%= rejected %>
+                </h3>
+            </div>
+
+            <div class="bg-indigo-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
+                <p class="text-gray-600 font-medium">Total Received</p>
+                <h3 class="text-3xl font-bold text-indigo-700 mt-2">
+                    <%= total %>
+                </h3>
+            </div>
+
+        </div>
+
+
+
+        <!-- ===================== FILTERS ===================== -->
+        <div class="bg-white shadow rounded-xl p-6 mb-6">
+            <form id="hodFilterForm" method="GET" action="/hod/dashboard" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                <!-- SEARCH -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Search by Student or Title
+                    </label>
+                    <input id="hodSearch" type="text" name="search" value="<%= searchQuery || '' %>"
+                        placeholder="Search..."
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200" />
+                </div>
+
+                <!-- STATUS -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Status
+                    </label>
+                    <select id="hodStatus" name="status"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+                        <option value="all" <%=statusFilter==='all' ? 'selected' : '' %>>All</option>
+                        <option value="submitted" <%=statusFilter==='submitted' ? 'selected' : '' %>>Pending</option>
+                        <option value="reviewed" <%=statusFilter==='reviewed' ? 'selected' : '' %>>Reviewed</option>
+
+                        <!-- ⭐ NEW REJECTED FILTER -->
+                        <option value="rejected" <%=statusFilter==='rejected' ? 'selected' : '' %>>Rejected</option>
+                    </select>
+
+                </div>
+
+                <!-- SORT -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Sort By
+                    </label>
+                    <select id="hodSort" name="sort"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="newest" <%=sortBy==='newest' ?'selected':'' %>>Newest</option>
+                        <option value="oldest" <%=sortBy==='oldest' ?'selected':'' %>>Oldest</option>
+                        <option value="title" <%=sortBy==='title' ?'selected':'' %>>Title (A–Z)</option>
+                    </select>
+                </div>
+
+            </form>
+        </div>
+
+
+        <!-- ===================== TABLE ===================== -->
+        <div class="bg-white shadow rounded-xl overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b">
+                <h3 class="text-xl font-semibold">Assignment Queue</h3>
+            </div>
+
+            <table class="min-w-full text-left">
+                <thead class="bg-gray-100 border-b">
+                    <tr>
+                        <th class="p-3 font-semibold text-gray-700">Student</th>
+                        <th class="p-3 font-semibold text-gray-700">Title</th>
+                        <th class="p-3 font-semibold text-gray-700">Status</th>
+                        <th class="p-3 font-semibold text-gray-700">Received</th>
+                        <th class="p-3 font-semibold text-gray-700">Days</th>
+                        <th class="p-3 font-semibold text-gray-700 text-center">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <% if (assignments.length===0) { %>
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-gray-500">
+                                No assignments match the current filters.
+                            </td>
+                        </tr>
+                        <% } else { %>
+
+                            <% assignments.forEach(a=> { %>
+                                <tr class="border-b hover:bg-gray-50 transition">
+
+                                    <td class="p-3 text-gray-800">
+                                        <%= a.studentId.name %>
+                                    </td>
+
+                                    <td class="p-3 font-medium">
+                                        <%= a.title %>
+                                    </td>
+
+                                    <td class="p-3">
+                                        <% if (a.status==='submitted' || a.status==='forwarded' ) { %>
+                                            <span
+                                                class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                                📝 Pending
+                                            </span>
+                                            <% } else { %>
+                                                <span
+                                                    class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                                                    ✅ Reviewed
+                                                </span>
+                                                <% } %>
+                                    </td>
+
+                                    <td class="p-3 text-gray-600">
+                                        <%= a.createdAt.toLocaleDateString('en-US', { month:'short', day:'numeric',
+                                            year:'numeric' }) %>
+                                    </td>
+
+                                    <td class="p-3">
+                                        <% const days=Math.floor((Date.now() - a.createdAt) / (1000*60*60*24)); %>
+                                            <span
+                                                class="<%= days>7 ? 'text-red-600 font-bold' : days>3 ? 'text-orange-600' : 'text-green-600' %>">
+                                                <%= days %> days
+                                            </span>
+                                    </td>
+
+                                    <td class="px-6 py-4 whitespace-nowrap text-center align-middle">
+
+                                        <% if (a.status==="forwarded" || a.status==="submitted" ) { %>
+
+                                            <!-- ACTION: Review Button (Primary) -->
+                                            <a href="/hod/review/<%= a._id %>"
+                                                class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200">
+                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                                Review Now
+                                            </a>
+
+                                            <% } else if (a.status==="approved" || a.status==="rejected" ) { %>
+
+                                                <!-- STATUS: Finalized (Clean Stack) -->
+                                                <div class="flex flex-col items-center space-y-2">
+
+                                                    <!-- Status Pill -->
+                                                    <span
+                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                                        <svg class="w-3 h-3 mr-1" fill="currentColor"
+                                                            viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd"
+                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                clip-rule="evenodd"></path>
+                                                        </svg>
+                                                        Finalized
+                                                    </span>
+
+                                                    <!-- Subtle Details Link -->
+                                                    <a href="/hod/details/<%= a._id %>"
+                                                        class="text-gray-500 hover:text-indigo-600 text-xs font-semibold uppercase tracking-wide transition-colors duration-200 flex items-center group">
+                                                        View Details
+                                                        <svg class="w-3 h-3 ml-1 transform group-hover:translate-x-0.5 transition-transform"
+                                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M9 5l7 7-7 7" />
+                                                        </svg>
+                                                    </a>
+                                                </div>
+
+                                                <% } %>
+
+                                    </td>
+
+
+                                </tr>
+                                <% }) %>
+
+                                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../../public/js/hod/dashboard.js"></script>
+
+    <%- include("../partials/hod/footer") %>

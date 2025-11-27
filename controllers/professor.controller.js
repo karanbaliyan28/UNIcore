@@ -2,22 +2,30 @@ import Assignment from "../models/assignment.model.js";
 import User from "../models/user.model.js";
 import Notification from "../models/notification.model.js";
 import crypto from "crypto";
-import { sendEmail } from "../utils/email.js"; // Ensure you have this utility created
+import { assignmentApprovedTemplate } from "../emails/assignmentApproved.js";
+import { assignmentRejectedTemplate } from "../emails/assignmentRejected.js";
+import { reviewOtpTemplate } from "../emails/reviewOtpTemplate.js";
+import { sendEmail } from "../utils/email.js";
 
-// GET /professor/dashboard
+// GET /professor/dashboard - FIXED COUNTS
 export const getProfessorDashboard = async (req, res) => {
   try {
-    // Get filter and search parameters
     const statusFilter = req.query.status || "all";
     const searchQuery = req.query.search || "";
     const sortBy = req.query.sort || "oldest";
 
-    // Build query
-    let query = { reviewerId: req.user.id, status: { $ne: "draft" } };
+    // Build query - include assignments where professor was the original reviewer
+    let query = {
+      $or: [
+        { reviewerId: req.user.id },
+        { "history.reviewerId": req.user.id }, // Include assignments professor has touched
+      ],
+      status: { $ne: "draft" },
+    };
 
-    // Apply status filter - only add status to query if not 'all'
+    // Apply status filter
     if (statusFilter !== "all") {
-      query.status = statusFilter; // submitted, approved, rejected
+      query.status = statusFilter;
     }
 
     // Apply search filter
@@ -32,23 +40,38 @@ export const getProfessorDashboard = async (req, res) => {
       ];
     }
 
-    // Count statistics
+    // Count statistics - FIXED: Only count assignments in professor's queue
     const pending = await Assignment.countDocuments({
       reviewerId: req.user.id,
       status: "submitted",
     });
 
     const approved = await Assignment.countDocuments({
-      reviewerId: req.user.id,
-      status: "approved",
+      $or: [
+        { reviewerId: req.user.id, status: "approved" },
+        { "history.reviewerId": req.user.id, "history.action": "approved" },
+      ],
     });
 
     const rejected = await Assignment.countDocuments({
-      reviewerId: req.user.id,
-      status: "rejected",
+      $or: [
+        { reviewerId: req.user.id, status: "rejected" },
+        { "history.reviewerId": req.user.id, "history.action": "rejected" },
+      ],
     });
 
-    const totalReviewed = approved + rejected;
+    // FIXED: Count only assignments this professor forwarded
+    const forwarded = await Assignment.countDocuments({
+      status: "forwarded",
+      history: {
+        $elemMatch: {
+          action: "forwarded",
+          reviewerId: req.user.id,
+        },
+      },
+    });
+
+    const totalReviewed = approved + rejected + forwarded;
 
     // Pagination
     const page = parseInt(req.query.page) || 1;
@@ -70,13 +93,13 @@ export const getProfessorDashboard = async (req, res) => {
     const totalAssignments = await Assignment.countDocuments(query);
     const totalPages = Math.ceil(totalAssignments / limit);
 
-    // Get unread notifications count
     const unreadNotifications = await Notification.countDocuments({
       userId: req.user.id,
       read: false,
     });
 
     res.render("professor/dashboard", {
+      forwarded,
       pending,
       approved,
       rejected,
@@ -95,7 +118,7 @@ export const getProfessorDashboard = async (req, res) => {
   }
 };
 
-// GET /professor/review/:id - For reviewing/editing
+// GET /professor/review/:id - BACK TO ORIGINAL (NO FORWARD HERE)
 export const getReviewPage = async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id)
@@ -111,7 +134,7 @@ export const getReviewPage = async (req, res) => {
   }
 };
 
-// GET /professor/details/:id - For viewing only (no editing)
+// GET /professor/details/:id - WITH FORWARD OPTION FOR APPROVED
 export const getAssignmentDetails = async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id)
@@ -121,30 +144,34 @@ export const getAssignmentDetails = async (req, res) => {
 
     if (!assignment) return res.status(404).send("Assignment not found");
 
-    res.render("professor/details", { assignment });
+    // Build forward list (HOD only)
+    const forwardList = await User.find({
+      department: req.user.department,
+      role: "hod",
+    }).select("name role");
+
+    return res.render("professor/details", {
+      assignment,
+      forwardList,
+      user: req.user,
+    });
   } catch (err) {
     console.error("Details Page Error:", err);
     res.status(500).send("Error loading assignment details");
   }
 };
 
-// ==========================================
-// NEW: STEP 1 - Initiate Review (Send OTP)
-// ==========================================
-// professor.controller.js - Update initiateReview function
-
+// STEP 1 - Initiate Review (UNCHANGED)
 export const initiateReview = async (req, res) => {
   try {
     const { remark, signature, decision } = req.body;
     const assignmentId = req.params.id;
 
-    // Check if image file was uploaded
     const signatureImage = req.file ? req.file.filename : null;
 
     const assignment = await Assignment.findById(assignmentId);
     if (!assignment) return res.status(404).send("Assignment not found");
 
-    // Validate: Must have either text signature OR image signature
     if (!signature && !signatureImage) {
       return res.status(400).send("Signature is required (text or image)");
     }
@@ -154,54 +181,41 @@ export const initiateReview = async (req, res) => {
     }
 
     const otp = crypto.randomInt(100000, 999999).toString();
-    const user = await User.findById(req.user.id);
 
-    // Save temporary data INCLUDING signature type
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(401).send("Unauthorized user");
+
     user.reviewOtp = otp;
     user.reviewOtpExpires = Date.now() + 10 * 60 * 1000;
+
     user.tempReviewData = {
       assignmentId: assignment._id,
-      decision: decision,
-      remark: remark,
-      signature: signature || null, // Text signature (if provided)
-      signatureImage: signatureImage || null, // Image signature (if provided)
+      decision,
+      remark,
+      signature: signature || null,
+      signatureImage: signatureImage || null,
     };
 
     await user.save();
 
-    // Send email with signature preview
     const signaturePreview = signatureImage
       ? "<p><em>(Signature Image Uploaded)</em></p>"
-      : `<p style="font-family: 'Great Vibes', cursive; font-size: 24px; color: #4f46e5;">${signature}</p>`;
+      : `<p style="font-family: cursive; font-size: 24px; color: #4f46e5;">${signature}</p>`;
 
     await sendEmail({
       to: user.email,
       subject: "UNICore: Verify Assignment Review",
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #1f2937;">Assignment Review Verification</h2>
-          <p>You are about to <strong style="color: ${decision === "approved" ? "#10b981" : "#ef4444"};">${decision.toUpperCase()}</strong> the assignment:</p>
-          <p style="font-style: italic; font-size: 18px;">"${assignment.title}"</p>
-          
-          <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0 0 10px 0; font-weight: bold;">Digital Signature:</p>
-            ${signaturePreview}
-          </div>
-          
-          <div style="background: #eef2ff; padding: 20px; border-radius: 8px; text-align: center;">
-            <p style="margin: 0 0 10px 0; color: #6366f1; font-weight: bold;">Your OTP Code:</p>
-            <h1 style="color: #4f46e5; font-size: 36px; letter-spacing: 8px; margin: 10px 0;">${otp}</h1>
-            <p style="margin: 10px 0 0 0; font-size: 12px; color: #6b7280;">Valid for 10 minutes</p>
-          </div>
-          
-          <p style="margin-top: 20px; font-size: 12px; color: #6b7280;">If you did not initiate this review, please ignore this email.</p>
-        </div>
-      `,
+      html: reviewOtpTemplate(
+        user.name,
+        assignment.title,
+        otp,
+        signaturePreview
+      ),
     });
 
     res.render("professor/verify-otp", {
       email: user.email,
-      assignmentId: assignmentId,
+      assignmentId,
     });
   } catch (err) {
     console.error("Initiate Review Error:", err);
@@ -209,18 +223,19 @@ export const initiateReview = async (req, res) => {
   }
 };
 
-// ==========================================
-// NEW: STEP 2 - Verify OTP & Save (Commit Image to History)
-// ==========================================
+// STEP 2 - Verify OTP & Save (UNCHANGED)
 export const verifyReviewOTP = async (req, res) => {
   try {
     const { otp } = req.body;
+
     const user = await User.findById(req.user.id);
+    if (!user) return res.status(401).send("Unauthorized");
 
     if (
       !user.reviewOtp ||
-      user.reviewOtp !== otp ||
-      user.reviewOtpExpires < Date.now()
+      user.reviewOtp !== String(otp) ||
+      user.reviewOtpExpires < Date.now() ||
+      !user.tempReviewData
     ) {
       return res.render("professor/verify-otp", {
         email: user.email,
@@ -229,19 +244,21 @@ export const verifyReviewOTP = async (req, res) => {
       });
     }
 
-    // Retrieve ALL temp data including image
     const { assignmentId, decision, remark, signature, signatureImage } =
       user.tempReviewData;
 
     const assignment = await Assignment.findById(assignmentId);
     if (!assignment) return res.status(404).send("Assignment not found");
 
-    // Update History with Image
+    if (assignment.reviewerId.toString() !== user._id.toString()) {
+      return res.status(403).send("Unauthorized review action");
+    }
+
     assignment.history.push({
       action: decision,
-      remark: remark,
-      signature: signature,
-      signatureImage: signatureImage, // <--- Save image to history
+      remark,
+      signature: signature || null,
+      signatureImage: signatureImage || null,
       reviewerId: user._id,
       date: new Date(),
     });
@@ -249,13 +266,13 @@ export const verifyReviewOTP = async (req, res) => {
     if (decision === "approved") {
       assignment.status = "approved";
       assignment.approvalRemark = remark;
-      assignment.reviewerSignature = signature;
-      assignment.reviewerSignatureImage = signatureImage;
-    } else if (decision === "rejected") {
+      assignment.reviewerSignature = signature || null;
+      assignment.reviewerSignatureImage = signatureImage || null;
+    } else {
       assignment.status = "rejected";
       assignment.rejectionRemark = remark;
-      assignment.reviewerSignature = signature;
-      assignment.reviewerSignatureImage = signatureImage;
+      assignment.reviewerSignature = signature || null;
+      assignment.reviewerSignatureImage = signatureImage || null;
     }
 
     await assignment.save();
@@ -269,7 +286,42 @@ export const verifyReviewOTP = async (req, res) => {
       read: false,
     });
 
-    // Cleanup
+    if (decision === "approved") {
+      try {
+        const student = await User.findById(assignment.studentId);
+        await sendEmail({
+          to: student.email,
+          subject: `Assignment "${assignment.title}" Approved`,
+          html: assignmentApprovedTemplate(
+            student.name,
+            assignment.title,
+            remark,
+            assignment._id
+          ),
+        });
+      } catch (err) {
+        console.error("Approval email failed:", err);
+      }
+    }
+
+    if (decision === "rejected") {
+      try {
+        const student = await User.findById(assignment.studentId);
+        await sendEmail({
+          to: student.email,
+          subject: `Assignment "${assignment.title}" Rejected`,
+          html: assignmentRejectedTemplate(
+            student.name,
+            assignment.title,
+            remark,
+            assignment._id
+          ),
+        });
+      } catch (err) {
+        console.error("Rejection email failed:", err);
+      }
+    }
+
     user.reviewOtp = undefined;
     user.reviewOtpExpires = undefined;
     user.tempReviewData = undefined;
@@ -281,7 +333,100 @@ export const verifyReviewOTP = async (req, res) => {
     res.status(500).send("Error verifying review");
   }
 };
-// Get Notifications
+
+// Forward Assignment - ONLY FOR APPROVED ASSIGNMENTS
+export const forwardAssignment = async (req, res) => {
+  try {
+    const { newReviewerId, note } = req.body;
+    const assignmentId = req.params.id;
+
+    if (!newReviewerId || !note) {
+      return res
+        .status(400)
+        .send("HOD selection and forwarding note are required");
+    }
+
+    if (note.trim().length < 10) {
+      return res
+        .status(400)
+        .send("Forwarding note must be at least 10 characters");
+    }
+
+    const assignment = await Assignment.findById(assignmentId).populate(
+      "studentId",
+      "name email"
+    );
+
+    if (!assignment) {
+      return res.status(404).send("Assignment not found");
+    }
+
+    // CRITICAL: Only approved assignments can be forwarded
+    if (assignment.status !== "approved") {
+      return res
+        .status(400)
+        .send("Only approved assignments can be forwarded to HOD");
+    }
+
+    // Verify new reviewer is HOD in same department
+    const newReviewer = await User.findById(newReviewerId);
+
+    if (!newReviewer) {
+      return res.status(404).send("Selected reviewer not found");
+    }
+
+    if (newReviewer.role !== "hod") {
+      return res.status(400).send("Assignment can only be forwarded to HOD");
+    }
+
+    if (newReviewer.department !== req.user.department) {
+      return res.status(400).send("Can only forward to HOD in your department");
+    }
+
+    // Update assignment
+    assignment.reviewerId = newReviewerId;
+    assignment.status = "forwarded";
+
+    // Add to history
+    assignment.history.push({
+      action: "forwarded",
+      remark: note,
+      reviewerId: req.user._id,
+      date: new Date(),
+    });
+
+    await assignment.save();
+
+    // Notify HOD
+    await Notification.create({
+      userId: newReviewerId,
+      assignmentId: assignment._id,
+      sender: req.user._id,
+      type: "forwarded",
+      message: `Assignment "${assignment.title}" has been forwarded to you by ${req.user.name} for final approval.`,
+      read: false,
+    });
+
+    // Notify student
+    await Notification.create({
+      userId: assignment.studentId._id,
+      assignmentId: assignment._id,
+      sender: req.user._id,
+      type: "forwarded",
+      message: `Your assignment "${assignment.title}" has been forwarded to HOD for final review.`,
+      read: false,
+    });
+
+    res.redirect(
+      "/professor/dashboard?message=Assignment forwarded successfully"
+    );
+  } catch (err) {
+    console.error("Forward Assignment Error:", err);
+    res.status(500).send("Error forwarding assignment");
+  }
+};
+
+// Notifications (UNCHANGED)
 export const getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({ userId: req.user.id })
@@ -296,7 +441,6 @@ export const getNotifications = async (req, res) => {
   }
 };
 
-// Mark Notification as Read
 export const markNotificationRead = async (req, res) => {
   try {
     await Notification.findByIdAndUpdate(req.params.id, { read: true });
@@ -307,7 +451,6 @@ export const markNotificationRead = async (req, res) => {
   }
 };
 
-// Mark All Notifications as Read
 export const markAllNotificationsRead = async (req, res) => {
   try {
     await Notification.updateMany(

@@ -1,0 +1,298 @@
+<%- include("../partials/hod/header") %>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+  <div class="min-h-screen bg-gray-100 py-10">
+    <div class="max-w-7xl mx-auto px-4">
+
+      <!-- Back Button -->
+      <div class="mb-6">
+        <a href="/hod/dashboard" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Dashboard
+        </a>
+      </div>
+
+      <!-- HEADER CARD -->
+      <div class="bg-white shadow rounded-2xl p-6 mb-8 border-l-4 border-indigo-600">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Final Review (HOD)</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Student -->
+          <div class="flex items-center space-x-4">
+            <div
+              class="h-16 w-16 rounded-full bg-indigo-600 text-white flex items-center justify-center text-2xl font-bold">
+              <%= assignment.studentId.name.charAt(0).toUpperCase() %>
+            </div>
+
+            <div>
+              <p class="text-sm text-gray-500">Student</p>
+              <p class="text-lg font-bold">
+                <%= assignment.studentId.name %>
+              </p>
+              <p class="text-sm text-gray-600">
+                <%= assignment.studentId.email %>
+              </p>
+            </div>
+          </div>
+
+          <!-- Submission Info -->
+          <div>
+            <p class="text-sm text-gray-500">Submitted On</p>
+            <p class="text-lg font-bold">
+              <%= assignment.createdAt.toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" }) %>
+            </p>
+
+            <p class="mt-4 text-sm text-gray-500">Days Pending</p>
+            <% const dp=Math.floor((Date.now() - assignment.createdAt) / 86400000 ); %>
+              <p class="text-lg font-bold <%= dp > 7 ? 'text-red-600' : 'text-gray-900' %>">
+                <%= dp %> days
+              </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MAIN GRID -->
+      <div class="lg:grid lg:grid-cols-3 lg:gap-6">
+
+        <!-- LEFT SIDE -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Assignment DETAILS CARD -->
+          <div class="bg-white rounded-xl shadow p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Assignment Details</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="text-xs text-gray-500 uppercase">Title</label>
+                <p class="text-lg font-medium">
+                  <%= assignment.title %>
+                </p>
+              </div>
+
+              <div>
+                <label class="text-xs text-gray-500 uppercase">Category</label>
+                <p class="text-lg font-medium">
+                  <%= assignment.category %>
+                </p>
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="text-xs text-gray-500 uppercase">Description</label>
+                <p class="text-gray-700 leading-relaxed mt-1">
+                  <%= assignment.description || "No description provided." %>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- PDF VIEWER -->
+          <div class="bg-white rounded-xl shadow p-6" style="height: 720px;">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="text-xl font-bold">Assignment Document</h2>
+
+              <% if (assignment.fileUrl) { %>
+                <a href="/uploads/<%= assignment.fileUrl %>" download
+                  class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm shadow">
+                  Download PDF
+                </a>
+                <% } %>
+            </div>
+
+            <% if (assignment.fileUrl) { %>
+              <iframe src="/uploads/<%= assignment.fileUrl %>#toolbar=1"
+                class="w-full h-full rounded-xl border"></iframe>
+              <% } else { %>
+                <p class="text-center py-10 text-gray-500">No PDF uploaded.</p>
+                <% } %>
+          </div>
+
+          <!-- HISTORY -->
+          <% if (assignment.history.length> 0) { %>
+            <div class="bg-white rounded-xl shadow p-6">
+              <h2 class="text-xl font-bold text-gray-900 mb-4">Timeline</h2>
+
+              <div class="space-y-4">
+                <% assignment.history.forEach(h=> { %>
+                  <div class="p-4 rounded-xl
+              <%= h.action.includes('approved') ? 'bg-green-50 border-l-4 border-green-500'
+                : h.action.includes('forwarded') ? 'bg-purple-50 border-l-4 border-purple-500'
+                : 'bg-red-50 border-l-4 border-red-500' %>">
+
+                    <div class="flex justify-between">
+                      <span class="font-semibold">
+                        <%= h.action %>
+                      </span>
+                      <span class="text-sm text-gray-500">
+                        <%= new Date(h.date).toLocaleDateString() %>
+                      </span>
+                    </div>
+
+                    <p class="text-sm mt-2 text-gray-700">
+                      <%= h.remark %>
+                    </p>
+
+                    <% if (h.signature || h.signatureImage) { %>
+                      <div class="mt-3 bg-white border p-3 rounded-xl">
+                        <p class="text-xs font-semibold text-indigo-700 mb-1">Digitally Signed by <%= h.reviewerId.name
+                            %>
+                        </p>
+
+                        <% if (h.signatureImage) { %>
+                          <img src="/uploads/<%= h.signatureImage %>" class="h-16 object-contain" />
+                          <% } else { %>
+                            <p class="text-3xl text-indigo-800" style="font-family:'Great Vibes', cursive;">
+                              <%= h.signature %>
+                            </p>
+                            <% } %>
+                      </div>
+                      <% } %>
+
+                  </div>
+                  <% }) %>
+              </div>
+            </div>
+            <% } %>
+
+        </div>
+
+        <!-- RIGHT SIDE: FINAL PANEL -->
+        <div class="mt-8 lg:mt-0 sticky top-6">
+          <div class="bg-white rounded-2xl shadow-md p-6">
+
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Final HOD Review</h2>
+
+            <!-- Single Form for Both Actions -->
+            <form action="/hod/review/<%= assignment._id %>" method="POST" enctype="multipart/form-data" id="reviewForm"
+              class="space-y-6">
+
+              <!-- Remarks -->
+              <div>
+                <label class="text-sm font-semibold text-gray-700 mb-2 block">Final Remarks *</label>
+                <textarea name="remark" required rows="5"
+                  class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                  placeholder="Enter final approval or rejection notes..."></textarea>
+                <p class="text-xs text-gray-500 mt-1">Minimum 10 characters required.</p>
+              </div>
+
+              <!-- Signature Method Selector -->
+              <div>
+                <label class="text-sm font-semibold text-gray-700 mb-2 block">Signature Method *</label>
+                <div class="grid grid-cols-2 gap-3">
+                  <button type="button" onclick="selectSignatureType('text')" id="textSigBtn"
+                    class="signature-type-btn active px-4 py-3 border-2 border-purple-600 bg-purple-50 rounded-lg font-medium text-purple-700 transition flex items-center justify-center flex-col">
+                    <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Write Text
+                  </button>
+                  <button type="button" onclick="selectSignatureType('image')" id="imageSigBtn"
+                    class="signature-type-btn px-4 py-3 border-2 border-gray-200 bg-white rounded-lg font-medium text-gray-600 hover:border-purple-300 transition flex items-center justify-center flex-col">
+                    <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Upload Image
+                  </button>
+                </div>
+              </div>
+
+              <!-- OPTION 1: Text Signature -->
+              <div id="textSignatureSection">
+                <label class="text-sm font-semibold text-gray-700 mb-2 block">HOD Signature (Text) *</label>
+                <input name="signature" id="signatureTextInput"
+                  class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-purple-500"
+                  placeholder="e.g. Dr. A. K. Sharma">
+
+                <!-- Live Preview -->
+                <div class="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                  <p class="text-xs text-gray-400 uppercase tracking-widest mb-2">Preview</p>
+                  <p id="signaturePreview" class="text-3xl text-purple-900 transform -rotate-2"
+                    style="font-family: 'Great Vibes', cursive; min-height: 40px;">
+                    Sign above...
+                  </p>
+                </div>
+              </div>
+
+              <!-- OPTION 2: Image Signature -->
+              <div id="imageSignatureSection" style="display: none;">
+                <label class="text-sm font-semibold text-gray-700 mb-2 block">Upload Digital Stamp/Signature *</label>
+
+                <div
+                  class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-400 transition bg-gray-50 relative">
+                  <input type="file" name="signatureImage" id="signatureImageInput"
+                    accept="image/png,image/jpeg,image/jpg"
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    onchange="previewSignatureImage(event)">
+
+                  <div id="uploadPlaceholder">
+                    <svg class="w-10 h-10 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p class="text-sm text-gray-600 font-medium">Click to upload image</p>
+                    <p class="text-xs text-gray-400 mt-1">PNG, JPG (Max 2MB)</p>
+                  </div>
+
+                  <!-- Image Preview Container -->
+                  <div id="imagePreviewContainer" class="hidden mt-2">
+                    <img id="signatureImagePreview" class="h-16 mx-auto object-contain mb-2" alt="Signature preview">
+                    <p class="text-xs text-green-600 font-semibold">Image Selected</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="space-y-3 border-t pt-6">
+                <button type="submit" name="decision" value="approved"
+                  class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md transition transform hover:scale-[1.02] flex items-center justify-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  Finalize Approval
+                </button>
+
+                <button type="submit" name="decision" value="rejected"
+                  onclick="return confirm('Are you sure you want to REJECT this assignment? This is a final action.')"
+                  class="w-full bg-white border-2 border-red-100 text-red-600 font-semibold py-3.5 rounded-xl hover:bg-red-50 transition flex items-center justify-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                  </svg>
+                  Reject Assignment
+                </button>
+              </div>
+
+              <!-- Info Note -->
+              <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex items-start gap-3">
+                <svg class="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-xs text-indigo-800 leading-relaxed">
+                  This action is final. The student and professor will be notified immediately.
+                </p>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+        <!-- Signature Font -->
+        <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../../public/js/hod/review.js"></script>
+
+  <%- include("../partials/hod/footer") %>

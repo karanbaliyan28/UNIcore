@@ -1,5 +1,3 @@
-// public/js/hod/review.js
-
 let currentSignatureType = "text";
 
 function selectSignatureType(type) {
@@ -13,77 +11,70 @@ function selectSignatureType(type) {
   const imageInput = document.getElementById("signatureImageInput");
 
   if (type === "text") {
-    // Activate text button
+    // Activate TEXT button
     textBtn.classList.add(
-      "active",
-      "border-purple-600",
-      "bg-purple-50",
-      "text-purple-700"
+      "border-indigo-500",
+      "bg-indigo-50",
+      "text-indigo-700"
     );
-    textBtn.classList.remove("border-gray-200", "bg-white", "text-gray-600");
+    textBtn.classList.remove("border-gray-300", "bg-white", "text-gray-700");
 
-    // Deactivate image button
+    // Deactivate IMAGE button
     imageBtn.classList.remove(
-      "active",
-      "border-purple-600",
-      "bg-purple-50",
-      "text-purple-700"
+      "border-indigo-500",
+      "bg-indigo-50",
+      "text-indigo-700"
     );
-    imageBtn.classList.add("border-gray-200", "bg-white", "text-gray-600");
+    imageBtn.classList.add("border-gray-300", "bg-white", "text-gray-700");
 
-    // Show/hide sections
+    // Show text box
     textSection.style.display = "block";
     imageSection.style.display = "none";
 
-    // Set required attributes
     textInput.required = true;
     imageInput.required = false;
     imageInput.value = "";
   } else {
-    // Activate image button
+    // Activate IMAGE button
     imageBtn.classList.add(
-      "active",
-      "border-purple-600",
-      "bg-purple-50",
-      "text-purple-700"
+      "border-indigo-500",
+      "bg-indigo-50",
+      "text-indigo-700"
     );
-    imageBtn.classList.remove("border-gray-200", "bg-white", "text-gray-600");
+    imageBtn.classList.remove("border-gray-300", "bg-white", "text-gray-700");
 
-    // Deactivate text button
+    // Deactivate TEXT button
     textBtn.classList.remove(
-      "active",
-      "border-purple-600",
-      "bg-purple-50",
-      "text-purple-700"
+      "border-indigo-500",
+      "bg-indigo-50",
+      "text-indigo-700"
     );
-    textBtn.classList.add("border-gray-200", "bg-white", "text-gray-600");
+    textBtn.classList.add("border-gray-300", "bg-white", "text-gray-700");
 
-    // Show/hide sections
+    // Show image upload
     textSection.style.display = "none";
     imageSection.style.display = "block";
 
-    // Set required attributes
     textInput.required = false;
     imageInput.required = true;
   }
 }
 
-// Live preview for text signature
+// LIVE TEXT SIGNATURE PREVIEW
 document
   .getElementById("signatureTextInput")
   ?.addEventListener("input", function (e) {
     const preview = document.getElementById("signaturePreview");
-    preview.textContent = e.target.value || "Sign above...";
+    preview.textContent = e.target.value || "Your signature will appear here";
   });
 
-// Preview uploaded signature image
+// IMAGE PREVIEW
 function previewSignatureImage(event) {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = function (e) {
       document.getElementById("signatureImagePreview").src = e.target.result;
-      document.getElementById("uploadPlaceholder").classList.add("hidden");
       document
         .getElementById("imagePreviewContainer")
         .classList.remove("hidden");
@@ -92,14 +83,18 @@ function previewSignatureImage(event) {
   }
 }
 
-// Form validation before submit
-document.getElementById("reviewForm")?.addEventListener("submit", function (e) {
-  const remark = document.querySelector('textarea[name="remark"]').value.trim();
+function clearSignatureImage() {
+  document.getElementById("signatureImageInput").value = "";
+  document.getElementById("imagePreviewContainer").classList.add("hidden");
+}
 
+// FORM VALIDATION
+document.getElementById("reviewForm").addEventListener("submit", function (e) {
+  const remark = document.querySelector("textarea[name='remark']").value.trim();
   if (remark.length < 10) {
     e.preventDefault();
     alert("Please provide at least 10 characters in remarks.");
-    return false;
+    return;
   }
 
   if (currentSignatureType === "text") {
@@ -109,16 +104,14 @@ document.getElementById("reviewForm")?.addEventListener("submit", function (e) {
     if (signature.length < 2) {
       e.preventDefault();
       alert("Signature cannot be empty.");
-      return false;
+      return;
     }
   } else {
     const imageFile = document.getElementById("signatureImageInput").files[0];
     if (!imageFile) {
       e.preventDefault();
       alert("Please upload a signature image.");
-      return false;
+      return;
     }
   }
-
-  return true;
 });

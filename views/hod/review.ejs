@@ -165,9 +165,9 @@
 
             <h2 class="text-xl font-bold text-gray-900 mb-6">Final HOD Review</h2>
 
-            <!-- Single Form for Both Actions -->
-            <form action="/hod/review/<%= assignment._id %>" method="POST" enctype="multipart/form-data" id="reviewForm"
-              class="space-y-6">
+            <!-- Single Form Wrapper -->
+            <!-- Note: We don't need a default action here because the buttons define it -->
+            <form method="POST" enctype="multipart/form-data" id="reviewForm" class="space-y-6">
 
               <!-- Remarks -->
               <div>
@@ -208,7 +208,6 @@
                   class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-purple-500"
                   placeholder="e.g. Dr. A. K. Sharma">
 
-                <!-- Live Preview -->
                 <div class="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
                   <p class="text-xs text-gray-400 uppercase tracking-widest mb-2">Preview</p>
                   <p id="signaturePreview" class="text-3xl text-purple-900 transform -rotate-2"
@@ -221,14 +220,12 @@
               <!-- OPTION 2: Image Signature -->
               <div id="imageSignatureSection" style="display: none;">
                 <label class="text-sm font-semibold text-gray-700 mb-2 block">Upload Digital Stamp/Signature *</label>
-
                 <div
                   class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-400 transition bg-gray-50 relative">
                   <input type="file" name="signatureImage" id="signatureImageInput"
                     accept="image/png,image/jpeg,image/jpg"
                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     onchange="previewSignatureImage(event)">
-
                   <div id="uploadPlaceholder">
                     <svg class="w-10 h-10 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor"
                       viewBox="0 0 24 24">
@@ -236,10 +233,7 @@
                         d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                     <p class="text-sm text-gray-600 font-medium">Click to upload image</p>
-                    <p class="text-xs text-gray-400 mt-1">PNG, JPG (Max 2MB)</p>
                   </div>
-
-                  <!-- Image Preview Container -->
                   <div id="imagePreviewContainer" class="hidden mt-2">
                     <img id="signatureImagePreview" class="h-16 mx-auto object-contain mb-2" alt="Signature preview">
                     <p class="text-xs text-green-600 font-semibold">Image Selected</p>
@@ -247,9 +241,12 @@
                 </div>
               </div>
 
-              <!-- Action Buttons -->
+              <!-- Action Buttons with formaction -->
               <div class="space-y-3 border-t pt-6">
-                <button type="submit" name="decision" value="approved"
+
+                <!-- APPROVE BUTTON -->
+                <!-- formaction sends to /approve route -->
+                <button type="submit" formaction="/hod/assignments/<%= assignment._id %>/approve"
                   class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md transition transform hover:scale-[1.02] flex items-center justify-center">
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -257,7 +254,9 @@
                   Finalize Approval
                 </button>
 
-                <button type="submit" name="decision" value="rejected"
+                <!-- REJECT BUTTON -->
+                <!-- formaction sends to /reject route -->
+                <button type="submit" formaction="/hod/assignments/<%= assignment._id %>/reject"
                   onclick="return confirm('Are you sure you want to REJECT this assignment? This is a final action.')"
                   class="w-full bg-white border-2 border-red-100 text-red-600 font-semibold py-3.5 rounded-xl hover:bg-red-50 transition flex items-center justify-center">
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,24 +267,13 @@
                 </button>
               </div>
 
-              <!-- Info Note -->
-              <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex items-start gap-3">
-                <svg class="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <p class="text-xs text-indigo-800 leading-relaxed">
-                  This action is final. The student and professor will be notified immediately.
-                </p>
-              </div>
-
             </form>
           </div>
         </div>
 
         <!-- Signature Font -->
         <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
 
 
       </div>

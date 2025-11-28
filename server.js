@@ -20,7 +20,8 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // Middleware
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // This parses form data
 app.use(cookieParser());
 
 // Static files
@@ -45,8 +46,9 @@ app.get("/", (req, res) => {
   return res.redirect("/auth/login");
 });
 
-//admin Routes
+//auth Routes
 app.use("/auth", authRoutes);
+// Admin Routes
 app.use("/admin", adminRoutes);
 app.use("/admin/departments", departmentRoutes);
 app.use("/admin/users", userRoutes);

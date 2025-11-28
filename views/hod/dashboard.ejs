@@ -2,7 +2,7 @@
 
     <div class="max-w-7xl mx-auto p-6">
 
-        <!-- ===================== STATUS CARDS ===================== -->
+        <!-- STATUS CARDS -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6 mb-6">
 
             <div class="bg-blue-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
@@ -19,7 +19,6 @@
                 </h3>
             </div>
 
-            <!-- ⭐ NEW: REJECTED CARD -->
             <div class="bg-red-50 p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
                 <p class="text-gray-600 font-medium">Rejected</p>
                 <h3 class="text-3xl font-bold text-red-700 mt-2">
@@ -36,9 +35,7 @@
 
         </div>
 
-
-
-        <!-- ===================== FILTERS ===================== -->
+        <!-- FILTERS -->
         <div class="bg-white shadow rounded-xl p-6 mb-6">
             <form id="hodFilterForm" method="GET" action="/hod/dashboard" class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
@@ -59,15 +56,11 @@
                     </label>
                     <select id="hodStatus" name="status"
                         class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-
                         <option value="all" <%=statusFilter==='all' ? 'selected' : '' %>>All</option>
                         <option value="submitted" <%=statusFilter==='submitted' ? 'selected' : '' %>>Pending</option>
                         <option value="reviewed" <%=statusFilter==='reviewed' ? 'selected' : '' %>>Reviewed</option>
-
-                        <!-- ⭐ NEW REJECTED FILTER -->
                         <option value="rejected" <%=statusFilter==='rejected' ? 'selected' : '' %>>Rejected</option>
                     </select>
-
                 </div>
 
                 <!-- SORT -->
@@ -86,8 +79,7 @@
             </form>
         </div>
 
-
-        <!-- ===================== TABLE ===================== -->
+        <!-- TABLE -->
         <div class="bg-white shadow rounded-xl overflow-hidden">
             <div class="px-6 py-4 bg-gray-50 border-b">
                 <h3 class="text-xl font-semibold">Assignment Queue</h3>
@@ -99,8 +91,8 @@
                         <th class="p-3 font-semibold text-gray-700">Student</th>
                         <th class="p-3 font-semibold text-gray-700">Title</th>
                         <th class="p-3 font-semibold text-gray-700">Status</th>
-                        <th class="p-3 font-semibold text-gray-700">Received</th>
-                        <th class="p-3 font-semibold text-gray-700">Days</th>
+                        <th class="p-3 font-semibold text-gray-700">Received On</th>
+                        <th class="p-3 font-semibold text-gray-700">Days Pending</th>
                         <th class="p-3 font-semibold text-gray-700 text-center">Action</th>
                     </tr>
                 </thead>
@@ -113,8 +105,13 @@
                             </td>
                         </tr>
                         <% } else { %>
-
-                            <% assignments.forEach(a=> { %>
+                            <% assignments.forEach(a=> {
+                                // Find when assignment was forwarded to HOD
+                                const forwardedEntry = a.history.find(h => h.action === 'forwarded');
+                                const receivedDate = forwardedEntry ? new Date(forwardedEntry.date) : new
+                                Date(a.createdAt);
+                                const daysSinceReceived = Math.floor((Date.now() - receivedDate) / (1000*60*60*24));
+                                %>
                                 <tr class="border-b hover:bg-gray-50 transition">
 
                                     <td class="p-3 text-gray-800">
@@ -131,32 +128,37 @@
                                                 class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                                                 📝 Pending
                                             </span>
-                                            <% } else { %>
+                                            <% } else if (a.status==='approved' ) { %>
                                                 <span
                                                     class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                                                    ✅ Reviewed
+                                                    ✅ Approved
                                                 </span>
-                                                <% } %>
+                                                <% } else if (a.status==='rejected' ) { %>
+                                                    <span
+                                                        class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                                                        ❌ Rejected
+                                                    </span>
+                                                    <% } %>
                                     </td>
 
                                     <td class="p-3 text-gray-600">
-                                        <%= a.createdAt.toLocaleDateString('en-US', { month:'short', day:'numeric',
+                                        <%= receivedDate.toLocaleDateString('en-US', { month:'short', day:'numeric',
                                             year:'numeric' }) %>
+                                            <% if (forwardedEntry) { %>
+                                                <span class="block text-xs text-purple-600 mt-0.5">Forwarded</span>
+                                                <% } %>
                                     </td>
 
                                     <td class="p-3">
-                                        <% const days=Math.floor((Date.now() - a.createdAt) / (1000*60*60*24)); %>
-                                            <span
-                                                class="<%= days>7 ? 'text-red-600 font-bold' : days>3 ? 'text-orange-600' : 'text-green-600' %>">
-                                                <%= days %> days
-                                            </span>
+                                        <span
+                                            class="<%= daysSinceReceived > 7 ? 'text-red-600 font-bold' : daysSinceReceived > 3 ? 'text-orange-600' : 'text-green-600' %>">
+                                            <%= daysSinceReceived %> days
+                                        </span>
                                     </td>
 
                                     <td class="px-6 py-4 whitespace-nowrap text-center align-middle">
-
                                         <% if (a.status==="forwarded" || a.status==="submitted" ) { %>
-
-                                            <!-- ACTION: Review Button (Primary) -->
+                                            <!-- Review Button -->
                                             <a href="/hod/review/<%= a._id %>"
                                                 class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200">
                                                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
@@ -167,25 +169,25 @@
                                                 </svg>
                                                 Review Now
                                             </a>
-
                                             <% } else if (a.status==="approved" || a.status==="rejected" ) { %>
-
-                                                <!-- STATUS: Finalized (Clean Stack) -->
+                                                <!-- Finalized Status -->
                                                 <div class="flex flex-col items-center space-y-2">
-
-                                                    <!-- Status Pill -->
                                                     <span
-                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= a.status === 'approved' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200' %>">
                                                         <svg class="w-3 h-3 mr-1" fill="currentColor"
                                                             viewBox="0 0 20 20">
-                                                            <path fill-rule="evenodd"
-                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                                clip-rule="evenodd"></path>
+                                                            <% if (a.status==='approved' ) { %>
+                                                                <path fill-rule="evenodd"
+                                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                    clip-rule="evenodd"></path>
+                                                                <% } else { %>
+                                                                    <path fill-rule="evenodd"
+                                                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                                        clip-rule="evenodd"></path>
+                                                                    <% } %>
                                                         </svg>
                                                         Finalized
                                                     </span>
-
-                                                    <!-- Subtle Details Link -->
                                                     <a href="/hod/details/<%= a._id %>"
                                                         class="text-gray-500 hover:text-indigo-600 text-xs font-semibold uppercase tracking-wide transition-colors duration-200 flex items-center group">
                                                         View Details
@@ -196,15 +198,11 @@
                                                         </svg>
                                                     </a>
                                                 </div>
-
                                                 <% } %>
-
                                     </td>
-
 
                                 </tr>
                                 <% }) %>
-
                                     <% } %>
                 </tbody>
             </table>

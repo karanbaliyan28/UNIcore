@@ -4,7 +4,22 @@ import User from "../models/user.model.js";
 
 export const protect = async (req, res, next) => {
   const token = req.cookies?.token;
-  if (!token) return res.redirect("/auth/login");
+
+  // All public login/logout routes
+  const publicPaths = [
+    "/auth/login",
+    "/auth/logout",
+    "/admin/login",
+    "/student/login",
+    "/professor/login",
+    "/hod/login",
+  ];
+
+  // Allow login pages without needing token
+  if (!token) {
+    if (publicPaths.includes(req.path)) return next();
+    return res.redirect("/auth/login");
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -13,7 +28,15 @@ export const protect = async (req, res, next) => {
       "name email role department _id"
     );
 
+    // admin is not in User collection → handle separately
+    if (!user && decoded.role === "admin") {
+      req.user = { _id: decoded.id, role: "admin" };
+      res.locals.user = req.user;
+      return next();
+    }
+
     if (!user) return res.redirect("/auth/login");
+
     req.user = user;
     res.locals.user = user;
 

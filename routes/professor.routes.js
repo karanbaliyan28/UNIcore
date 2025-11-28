@@ -19,10 +19,10 @@ const router = express.Router();
 router.get("/dashboard", protect, professorOnly, getProfessorDashboard);
 
 // OTP Verification (Must be before :id routes)
+// OTP Verification FIRST (MUST BE BEFORE :id route)
 router.post("/review/verify-otp", protect, professorOnly, verifyReviewOTP);
 
-// Review (Step 1: Initiate & Send OTP)
-// ADDED uploadSignature middleware here to handle the file upload
+// Review pages
 router.get("/review/:id", protect, professorOnly, getReviewPage);
 router.post(
   "/review/:id",
@@ -32,7 +32,6 @@ router.post(
   initiateReview
 );
 
-// Details (for viewing only)
 router.get("/details/:id", protect, professorOnly, getAssignmentDetails);
 
 // Notifications

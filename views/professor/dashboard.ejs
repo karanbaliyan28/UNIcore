@@ -154,51 +154,81 @@
                     </td>
 
                     <td class="p-3">
-                      <% const daysPending=Math.floor((Date.now() - a.createdAt) / (1000*60*60*24)); let
-                        colorClass='text-green-600' ; if (daysPending> 7) colorClass = 'text-red-600 font-bold';
-                        else if (daysPending > 3) colorClass = 'text-orange-600';
-                        %>
-                        <span class="<%= colorClass %>">
-                          <%= daysPending %> days
-                        </span>
+                      <% const daysPassed=Math.floor((Date.now() - a.createdAt) / (1000 * 60 * 60 * 24)); const
+                        daysLeft=Math.max(0, deadlineDays - daysPassed); let colorClass="text-green-600" ; if (daysLeft
+                        <=7 && daysLeft> 4) colorClass = "text-yellow-600";
+                        if (daysLeft <= 4 && daysLeft> 0) colorClass = "text-orange-600";
+                          if (daysLeft === 0) colorClass = "text-red-600 font-bold";
+
+                          // Helper to format completion date
+                          const formattedDate = new Date(a.updatedAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric"
+                          });
+                          %>
+
+                          <% if (a.status==="approved" ) { %>
+                            <span class="text-green-700 font-semibold">✔ Approved on <%= formattedDate %></span>
+
+                            <% } else if (a.status==="rejected" ) { %>
+                              <span class="text-red-700 font-semibold">✖ Rejected on <%= formattedDate %></span>
+
+                              <% } else if (a.status==="forwarded" ) { %>
+                                <span class="text-purple-700 font-semibold">📤 Forwarded on <%= formattedDate %></span>
+
+                                <% } else { %>
+                                  <!-- Default Days Left -->
+                                  <span class="<%= colorClass %>">
+                                    <%= daysLeft===0 ? "Overdue" : daysLeft + " days left" %>
+                                  </span>
+                                  <% } %>
+
                     </td>
 
-                   <td class="p-3 align-middle">
- 
-    <div class="flex items-center justify-start w-40 mx-auto gap-3">
-        
-        <% if (a.status === "submitted") { %>
-            <!-- Review Action (Primary) -->
-            <a href="/professor/review/<%= a._id %>"
-               class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-               Review
-            </a>
-        <% } else { %>
-            
-            <!-- Details Action (Fixed Width to ensure alignment) -->
-            <a href="/professor/details/<%= a._id %>"
-               class="inline-flex items-center justify-center w-24 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-colors duration-200 shadow-sm">
-               Details
-            </a>
 
-            <!-- Forward Action (Appears next to Details without pushing it) -->
-            <% if (a.status === "approved") { %>
-                <a href="/professor/details/<%= a._id %>#forward-section"
-                   class="group relative flex items-center justify-center w-10 h-10 bg-purple-50 text-purple-600 rounded-lg border border-purple-100 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all duration-300 shadow-sm"
-                   title="Forward to HOD">
-                   
-                   <!-- Animated Arrow Icon -->
-                   <svg class="w-5 h-5 transform transition-transform duration-300 group-hover:translate-x-1" 
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                   </svg>
-                </a>
-            <% } %>
+                    <td class="p-3 align-middle">
 
-        <% } %>
-    </div>
-</td>
+                      <div class="flex items-center justify-start w-40 mx-auto gap-3">
+
+                        <% if (a.status==="submitted" ) { %>
+                          <!-- Review Action (Primary) -->
+                          <a href="/professor/review/<%= a._id %>"
+                            class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                              </path>
+                            </svg>
+                            Review
+                          </a>
+                          <% } else { %>
+
+                            <!-- Details Action (Fixed Width to ensure alignment) -->
+                            <a href="/professor/details/<%= a._id %>"
+                              class="inline-flex items-center justify-center w-24 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-colors duration-200 shadow-sm">
+                              Details
+                            </a>
+
+                            <!-- Forward Action (Appears next to Details without pushing it) -->
+                            <% if (a.status==="approved" ) { %>
+                              <a href="/professor/details/<%= a._id %>#forward-section"
+                                class="group relative flex items-center justify-center w-10 h-10 bg-purple-50 text-purple-600 rounded-lg border border-purple-100 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all duration-300 shadow-sm"
+                                title="Forward to HOD">
+
+                                <!-- Animated Arrow Icon -->
+                                <svg
+                                  class="w-5 h-5 transform transition-transform duration-300 group-hover:translate-x-1"
+                                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                              </a>
+                              <% } %>
+
+                                <% } %>
+                      </div>
+                    </td>
 
                   </tr>
                   <% }) %>

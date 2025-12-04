@@ -150,11 +150,37 @@
                                     </td>
 
                                     <td class="p-3">
-                                        <span
-                                            class="<%= daysSinceReceived > 7 ? 'text-red-600 font-bold' : daysSinceReceived > 3 ? 'text-orange-600' : 'text-green-600' %>">
-                                            <%= daysSinceReceived %> days
-                                        </span>
+                                        <% const daysPassed=Math.floor((Date.now() - a.createdAt) / (1000 * 60 * 60 *
+                                            24)); const daysLeft=Math.max(0, deadlineDays - daysPassed); let
+                                            color="text-green-600" ; if (daysLeft <=7 && daysLeft> 4) color =
+                                            "text-yellow-600";
+                                            if (daysLeft <= 4 && daysLeft> 0) color = "text-orange-600";
+                                                if (daysLeft === 0) color = "text-red-600 font-bold";
+
+                                                const doneDate = new Date(a.updatedAt).toLocaleDateString("en-US", {
+                                                month: "short",
+                                                day: "numeric",
+                                                year: "numeric"
+                                                });
+                                                %>
+
+                                                <% if (a.status==="approved" ) { %>
+                                                    <span class="text-green-700 font-semibold">✔ Finalized Approved on <%=
+                                                            doneDate %></span>
+
+                                                    <% } else if (a.status==="rejected" ) { %>
+                                                        <span class="text-red-700 font-semibold">✖ Final Rejected on <%=
+                                                                doneDate %></span>
+
+                                                        <% } else { %>
+                                                            <span class="<%= color %>">
+                                                                <%= daysLeft===0 ? "Overdue" : daysLeft + " days left"
+                                                                    %>
+                                                            </span>
+                                                            <% } %>
                                     </td>
+
+
 
                                     <td class="px-6 py-4 whitespace-nowrap text-center align-middle">
                                         <% if (a.status==="forwarded" || a.status==="submitted" ) { %>

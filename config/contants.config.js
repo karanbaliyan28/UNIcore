@@ -1,0 +1,1 @@
+export const ASSIGNMENT_DEADLINE_DAYS = 10;

@@ -63,12 +63,48 @@
 
             <div>
               <p class="text-sm font-semibold text-gray-600">Days Pending</p>
-              <% const daysPending=Math.floor((Date.now() - assignment.createdAt) / (1000*60*60*24)); %>
-                <p class="text-gray-900 mt-1 font-semibold
-              <%= daysPending > 7 ? 'text-red-600' : (daysPending > 3 ? 'text-orange-600' : 'text-green-600') %>">
-                  <%= daysPending %> days
-                </p>
+
+              <% const daysPassed=Math.floor((Date.now() - assignment.createdAt) / (1000 * 60 * 60 * 24)); const
+                daysLeft=Math.max(0, deadlineDays - daysPassed); let colorClass="text-green-600" ; if (daysLeft <=7 &&
+                daysLeft> 4) colorClass = "text-yellow-600";
+                if (daysLeft <= 4 && daysLeft> 0) colorClass = "text-orange-600";
+                  if (daysLeft === 0) colorClass = "text-red-600 font-bold";
+
+                  // Format completion date
+                  const finalDate = new Date(assignment.updatedAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric"
+                  });
+                  %>
+
+                  <% if (assignment.status==="approved" ) { %>
+
+                    <p class="mt-1 font-semibold text-green-700">
+                      ✔ Approved on <%= finalDate %>
+                    </p>
+
+                    <% } else if (assignment.status==="rejected" ) { %>
+
+                      <p class="mt-1 font-semibold text-red-700">
+                        ✖ Rejected on <%= finalDate %>
+                      </p>
+
+                      <% } else if (assignment.status==="forwarded" ) { %>
+
+                        <p class="mt-1 font-semibold text-purple-700">
+                          📤 Forwarded on <%= finalDate %>
+                        </p>
+
+                        <% } else { %>
+
+                          <p class="mt-1 font-semibold <%= colorClass %>">
+                            <%= daysLeft===0 ? "Overdue" : daysLeft + " days left" %>
+                          </p>
+
+                          <% } %>
             </div>
+
 
             <div>
               <p class="text-sm font-semibold text-gray-600">File</p>

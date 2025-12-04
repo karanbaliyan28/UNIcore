@@ -6,6 +6,7 @@ import { assignmentApprovedTemplate } from "../emails/assignmentApproved.js";
 import { assignmentRejectedTemplate } from "../emails/assignmentRejected.js";
 import { reviewOtpTemplate } from "../emails/reviewOtpTemplate.js";
 import { sendEmail } from "../utils/email.js";
+import { ASSIGNMENT_DEADLINE_DAYS } from "../config/contants.config.js";
 
 // GET /professor/dashboard - FIXED COUNTS
 export const getProfessorDashboard = async (req, res) => {
@@ -111,6 +112,7 @@ export const getProfessorDashboard = async (req, res) => {
       searchQuery,
       sortBy,
       unreadNotifications,
+      deadlineDays: ASSIGNMENT_DEADLINE_DAYS,
     });
   } catch (err) {
     console.error("Dashboard Error:", err);
@@ -127,7 +129,10 @@ export const getReviewPage = async (req, res) => {
 
     if (!assignment) return res.status(404).send("Assignment not found");
 
-    res.render("professor/review", { assignment });
+    res.render("professor/review", {
+      assignment,
+      deadlineDays: ASSIGNMENT_DEADLINE_DAYS,
+    });
   } catch (err) {
     console.error("Review Page Error:", err);
     res.status(500).send("Error loading review page");
@@ -153,6 +158,7 @@ export const getAssignmentDetails = async (req, res) => {
     return res.render("professor/details", {
       assignment,
       forwardList,
+      deadlineDays: ASSIGNMENT_DEADLINE_DAYS,
       user: req.user,
     });
   } catch (err) {

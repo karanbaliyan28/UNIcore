@@ -47,12 +47,20 @@
                             </p>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500 font-medium">Days Pending</p>
-                            <% const daysPending=Math.floor((Date.now() - assignment.createdAt) / (1000*60*60*24)); %>
-                                <p class="text-lg font-bold <%= daysPending > 7 ? 'text-red-600' : 'text-gray-900' %>">
-                                    <%= daysPending %> days
-                                </p>
+                            <p class="text-sm font-semibold text-gray-600">Days Pending</p>
+
+                            <% const daysPassed=Math.floor((Date.now() - assignment.createdAt) / (1000 * 60 * 60 * 24));
+                                const daysLeft=Math.max(0, deadlineDays - daysPassed); let colorClass="text-green-600" ;
+                                if (daysLeft <=7 && daysLeft> 4) colorClass = "text-yellow-600";
+                                if (daysLeft <= 4 && daysLeft> 0) colorClass = "text-orange-600";
+                                    if (daysLeft === 0) colorClass = "text-red-600 font-bold";
+                                    %>
+
+                                    <p class="mt-1 font-semibold <%= colorClass %>">
+                                        <%= daysLeft===0 ? "Overdue" : daysLeft + " days left" %>
+                                    </p>
                         </div>
+
                     </div>
                 </div>
             </div>

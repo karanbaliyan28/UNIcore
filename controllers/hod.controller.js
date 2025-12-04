@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import { sendEmail } from "../utils/email.js";
 import { hodFinalApprovedTemplate } from "../emails/hodAprove.js";
 import { hodFinalRejectedTemplate } from "../emails/hodReject.js";
+import { ASSIGNMENT_DEADLINE_DAYS } from "../config/contants.config.js";
 
 export const getHodDashboard = async (req, res) => {
   try {
@@ -71,6 +72,7 @@ export const getHodDashboard = async (req, res) => {
       searchQuery,
       sortBy,
       unreadNotifications,
+      deadlineDays: ASSIGNMENT_DEADLINE_DAYS,
       user: req.user,
     });
   } catch (err) {
@@ -96,7 +98,11 @@ export const getHodReviewPage = async (req, res) => {
         .send("You are not authorized to review this assignment");
     }
 
-    res.render("hod/review", { assignment, user: req.user });
+    res.render("hod/review", {
+      assignment,
+      user: req.user,
+      deadlineDays: ASSIGNMENT_DEADLINE_DAYS,
+    });
   } catch (err) {
     console.error("HOD Review Error:", err);
     res.status(500).send("Error loading review page");

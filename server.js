@@ -1,5 +1,9 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
+console.log("PORT =", process.env.PORT);
+console.log("RESEND =", process.env.RESEND_API_KEY);
+import express from "express";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -11,7 +15,6 @@ import adminRoutes from "./routes/admin.routes.js";
 import departmentRoutes from "./routes/admin.routes.js";
 import userRoutes from "./routes/user.routes.js";
 
-dotenv.config();
 connectDB();
 
 const __filename = fileURLToPath(import.meta.url);

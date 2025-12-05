@@ -1,25 +1,41 @@
 // utils/email.js
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+let resendInstance = null;
+
+const getResend = () => {
+  if (!resendInstance) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not defined in environment variables");
+    }
+    resendInstance = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendInstance;
+};
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.ADMIN_EMAIL, // your personal Gmail
-        pass: process.env.ADMIN_EMAIL_PASSWORD, // Gmail App Password
-      },
+    const resend = getResend();
+
+    const { data, error } = await resend.emails.send({
+      from: "University Portal <onboarding@resend.dev>",
+      to: to,
+      subject: subject,
+      html: html,
     });
 
-    await transporter.sendMail({
-      from: `"University Portal" <${process.env.ADMIN_EMAIL}>`,
-      to,
-      subject,
-      html,
-    });
+    if (error) {
+      console.error("❌ Resend API Error:", error);
+      throw error;
+    }
 
-    console.log("📧 Email sent to:", to);
+    console.log("📧 Email sent successfully to:", to);
+    console.log("✅ Email ID:", data?.id);
+
+    return data;
   } catch (err) {
     console.error("❌ Email sending failed:", err);
+    console.error("Full error:", JSON.stringify(err, null, 2));
+    throw err;
   }
 };

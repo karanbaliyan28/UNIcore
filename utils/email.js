@@ -1,46 +1,39 @@
-import nodemailer from "nodemailer";
+import SibApiV3Sdk from "sib-api-v3-sdk";
 
-let transporterInstance = null;
+let apiInstance = null;
 
-const getTransporter = () => {
-  if (!transporterInstance) {
-    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_EMAIL_PASSWORD) {
-      throw new Error("SMTP environment variables are not fully defined");
+const getBrevo = () => {
+  if (!apiInstance) {
+    if (!process.env.BREVO_API_KEY) {
+      throw new Error("BREVO_API_KEY not set");
     }
 
-    transporterInstance = nodemailer.createTransport({
-      // host:smtp.gmail.com,
-      service:"gmail",
-      port: 587,
-      secure: false, // true for 465, false for others
-      auth: {
-        user: process.env.ADMIN_EMAIL,
-        pass: process.env.ADMIN_EMAIL_PASSWORD,
-      },
-    });
-  }
+    const client = SibApiV3Sdk.ApiClient.instance;
+    client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
 
-  return transporterInstance;
+    apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+  }
+  return apiInstance;
 };
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    const transporter = getTransporter();
+    const brevo = getBrevo();
 
-    const info = await transporter.sendMail({
-      from: `"University Portal" <${process.env.ADMIN_EMAIL}>`,
-      to,
+    const response = await brevo.sendTransacEmail({
+      sender: {
+        email: "karanbaliyan62@gmail.com",
+        name: "University Portal",
+      },
+      to: [{ email: to }],
       subject,
-      html,
+      htmlContent: html,
     });
 
-    console.log("📧 Email sent successfully to:", to);
-    console.log("✅ Message ID:", info.messageId);
-
-    return info;
+    console.log("📧 Email sent:", response.messageId);
+    return response;
   } catch (err) {
-    console.error("❌ Email sending failed:", err);
-    console.error("Full error:", JSON.stringify(err, null, 2));
+    console.error("❌ Brevo email failed:", err);
     throw err;
   }
 };

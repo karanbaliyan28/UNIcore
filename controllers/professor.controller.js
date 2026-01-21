@@ -5,7 +5,7 @@ import crypto from "crypto";
 import { assignmentApprovedTemplate } from "../emails/assignmentApproved.js";
 import { assignmentRejectedTemplate } from "../emails/assignmentRejected.js";
 import { reviewOtpTemplate } from "../emails/reviewOtpTemplate.js";
-import { sendEmail } from "../utils/email.js";
+import { sendEmail } from "../utils/prev.js";
 import { ASSIGNMENT_DEADLINE_DAYS } from "../config/contants.config.js";
 
 // GET /professor/dashboard - FIXED COUNTS

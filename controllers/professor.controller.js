@@ -139,8 +139,8 @@ export const getReviewPage = async (req, res) => {
     console.log("===============================");
 
     res.render("professor/review", {
-      assignment:assignmentData,c
-      // deadlineDays: ASSIGNMENT_DEADLINE_DAYS,
+      assignment:assignmentData,
+      deadlineDays: ASSIGNMENT_DEADLINE_DAYS,
     });
   } catch (err) {
     console.error("Review Page Error:", err);

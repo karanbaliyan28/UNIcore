@@ -28,7 +28,7 @@ export const sendEmail = async ({ to, subject, html }) => {
     const transporter = getTransporter();
 
     const info = await transporter.sendMail({
-      from: `"University Portal" <${process.env.ADMIN_EMAIL || process.env.SMTP_USER}>`,
+      from: `"University Portal" <${process.env.ADMIN_EMAIL}>`,
       to,
       subject,
       html,

@@ -314,31 +314,6 @@ export const submitAssignment = async (req, res) => {
   }
 };
 
-// Download Assignment File
-export const downloadAssignmentFile = async (req, res) => {
-  try {
-    const assignment = await Assignment.findById(req.params.id);
-
-    if (!assignment) {
-      return res.status(404).send("File not found");
-    }
-
-    if (assignment.studentId.toString() !== req.user.id) {
-      return res.status(403).send("Unauthorized");
-    }
-
-    res.download(assignment.fileUrl, (err) => {
-      if (err) {
-        console.error("Download Error:", err);
-        res.status(404).send("File not found on server");
-      }
-    });
-  } catch (err) {
-    console.error("Download Error:", err);
-    res.status(500).send("Error downloading file");
-  }
-};
-
 // Resubmit Rejected Assignment - FIXED
 export const resubmitAssignment = async (req, res) => {
   try {
@@ -394,6 +369,31 @@ export const resubmitAssignment = async (req, res) => {
   } catch (err) {
     console.error("Resubmit Error:", err);
     res.status(500).send("Error resubmitting assignment.");
+  }
+};
+
+// Download Assignment File
+export const downloadAssignmentFile = async (req, res) => {
+  try {
+    const assignment = await Assignment.findById(req.params.id);
+
+    if (!assignment) {
+      return res.status(404).send("File not found");
+    }
+
+    if (assignment.studentId.toString() !== req.user.id) {
+      return res.status(403).send("Unauthorized");
+    }
+
+    res.download(assignment.fileUrl, (err) => {
+      if (err) {
+        console.error("Download Error:", err);
+        res.status(404).send("File not found on server");
+      }
+    });
+  } catch (err) {
+    console.error("Download Error:", err);
+    res.status(500).send("Error downloading file");
   }
 };
 

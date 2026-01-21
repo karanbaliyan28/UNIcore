@@ -34,7 +34,7 @@ export const getHodDashboard = async (req, res) => {
       assignments = assignments.filter(
         (a) =>
           a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          a.studentId.name.toLowerCase().includes(searchQuery.toLowerCase())
+          a.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -92,14 +92,39 @@ export const getHodReviewPage = async (req, res) => {
       return res.status(404).send("Assignment not found");
     }
 
+    // 🔍 DEBUG LOGS - Check what we got
+    console.log("=== DEBUG: Assignment Data ===");
+    console.log("Raw assignment:", assignment);
+    console.log("---");
+    console.log("studentId exists:", !!assignment.studentId);
+    console.log("studentId value:", assignment.studentId);
+    console.log("studentId type:", typeof assignment.studentId);
+    console.log("---");
+    console.log("studentId.name:", assignment.studentId?.name);
+    console.log("studentId.email:", assignment.studentId?.email);
+    console.log("---");
+    console.log("reviewerId:", assignment.reviewerId);
+    console.log("req.user._id:", req.user._id);
+    console.log("===========================");
+
     if (assignment.reviewerId._id.toString() !== req.user._id.toString()) {
       return res
         .status(403)
         .send("You are not authorized to review this assignment");
     }
 
+    // Convert to plain object so you can add properties
+    const assignmentData = assignment.toObject();
+    assignmentData.name = assignment.studentId?.name || "Unknown";
+    assignmentData.email = assignment.studentId?.email || "Unknown";
+
+    console.log("=== Final Data Sent to View ===");
+    console.log("assignmentData.name:", assignmentData.name);
+    console.log("assignmentData.email:", assignmentData.email);
+    console.log("===============================");
+
     res.render("hod/review", {
-      assignment,
+      assignment: assignmentData,
       user: req.user,
       deadlineDays: ASSIGNMENT_DEADLINE_DAYS,
     });
@@ -159,7 +184,7 @@ export const hodApprove = async (req, res) => {
 
     // Send notification
     await Notification.create({
-      userId: assignment.studentId._id,
+      userId: assignment._id,
       assignmentId,
       sender: req.user._id,
       type: "approved",
@@ -170,10 +195,10 @@ export const hodApprove = async (req, res) => {
     // Send email
     try {
       await sendEmail({
-        to: assignment.studentId.email,
+        to: assignment.eail,
         subject: "Your Assignment Has Been Approved by HOD ✔",
         html: hodFinalApprovedTemplate(
-          assignment.studentId.name,
+          assignment.name,
           assignment.title,
           remark,
           assignment._id
@@ -241,7 +266,7 @@ export const hodReject = async (req, res) => {
 
     // Send notification
     await Notification.create({
-      userId: assignment.studentId._id,
+      userId: assignment._id,
       assignmentId,
       sender: req.user._id,
       type: "rejected",
@@ -252,10 +277,10 @@ export const hodReject = async (req, res) => {
     // Send email
     try {
       await sendEmail({
-        to: assignment.studentId.email,
+        to: assignment.email,
         subject: "Your Assignment Was Rejected by HOD ❌",
         html: hodFinalRejectedTemplate(
-          assignment.studentId.name,
+          assignment.name,
           assignment.title,
           remark,
           assignment._id

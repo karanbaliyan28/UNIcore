@@ -128,10 +128,19 @@ export const getReviewPage = async (req, res) => {
       .populate("reviewerId", "name");
 
     if (!assignment) return res.status(404).send("Assignment not found");
+      // Convert to plain object so you can add properties
+    const assignmentData = assignment.toObject();
+    assignmentData.name = assignment.studentId?.name || "Unknown";
+    assignmentData.email = assignment.studentId?.email || "Unknown";
+
+    console.log("=== Final Data Sent to View ===");
+    console.log("assignmentData.name:", assignmentData.name);
+    console.log("assignmentData.email:", assignmentData.email);
+    console.log("===============================");
 
     res.render("professor/review", {
-      assignment,
-      deadlineDays: ASSIGNMENT_DEADLINE_DAYS,
+      assignment:assignmentData,c
+      // deadlineDays: ASSIGNMENT_DEADLINE_DAYS,
     });
   } catch (err) {
     console.error("Review Page Error:", err);
@@ -415,7 +424,7 @@ export const forwardAssignment = async (req, res) => {
 
     // Notify student
     await Notification.create({
-      userId: assignment.studentId._id,
+      userId: assignment._id,
       assignmentId: assignment._id,
       sender: req.user._id,
       type: "forwarded",

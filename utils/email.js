@@ -1,38 +1,43 @@
-// utils/email.js
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-let resendInstance = null;
+let transporterInstance = null;
 
-const getResend = () => {
-  if (!resendInstance) {
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY is not defined in environment variables");
+const getTransporter = () => {
+  if (!transporterInstance) {
+    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_EMAIL_PASSWORD) {
+      throw new Error("SMTP environment variables are not fully defined");
     }
-    resendInstance = new Resend(process.env.RESEND_API_KEY);
+
+    transporterInstance = nodemailer.createTransport({
+      // host:smtp.gmail.com,
+      service:"gmail",
+      port: 587,
+      secure: false, // true for 465, false for others
+      auth: {
+        user: process.env.ADMIN_EMAIL,
+        pass: process.env.ADMIN_EMAIL_PASSWORD,
+      },
+    });
   }
-  return resendInstance;
+
+  return transporterInstance;
 };
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    const resend = getResend();
+    const transporter = getTransporter();
 
-    const { data, error } = await resend.emails.send({
-      from: "University Portal <onboarding@resend.dev>",
-      to: to,
-      subject: subject,
-      html: html,
+    const info = await transporter.sendMail({
+      from: `"University Portal" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      to,
+      subject,
+      html,
     });
 
-    if (error) {
-      console.error("❌ Resend API Error:", error);
-      throw error;
-    }
-
     console.log("📧 Email sent successfully to:", to);
-    console.log("✅ Email ID:", data?.id);
+    console.log("✅ Message ID:", info.messageId);
 
-    return data;
+    return info;
   } catch (err) {
     console.error("❌ Email sending failed:", err);
     console.error("Full error:", JSON.stringify(err, null, 2));

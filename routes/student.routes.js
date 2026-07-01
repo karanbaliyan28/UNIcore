@@ -13,7 +13,6 @@ import {
   getMyAssignments,
   getAssignmentDetails,
   submitAssignment,
-  downloadAssignmentFile,
   resubmitAssignment,
   getNotifications,
   markNotificationRead,
@@ -49,12 +48,7 @@ router.post(
 router.get("/assignments", protect, studentOnly, getMyAssignments);
 router.get("/assignments/:id", protect, studentOnly, getAssignmentDetails);
 router.post("/assignments/:id/submit", protect, studentOnly, submitAssignment);
-router.get(
-  "/assignments/:id/download",
-  protect,
-  studentOnly,
-  downloadAssignmentFile
-);
+
 router.post(
   "/assignments/:id/resubmit",
   protect,

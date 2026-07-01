@@ -1,0 +1,343 @@
+<%- include('../partials/professor/header') %>
+
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+  <div class="min-h-screen bg-gray-50 p-6">
+    <div class="max-w-6xl mx-auto">
+
+      <!-- Assignment Details Card -->
+      <div class="bg-white rounded-xl shadow-md p-8 mb-6">
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-3xl font-bold text-gray-900">
+            <%= assignment.title %>
+          </h1>
+
+          <!-- Status Badge -->
+          <% if (assignment.status==="approved" ) { %>
+            <span class="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-bold">✅ Approved</span>
+            <% } else if (assignment.status==="submitted" ) { %>
+              <span class="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-bold">📝 Pending Review</span>
+              <% } else if (assignment.status==="forwarded" ) { %>
+                <span class="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-bold">📤 Forwarded</span>
+                <% } else if (assignment.status==="rejected" ) { %>
+                  <span class="px-4 py-2 bg-red-100 text-red-700 rounded-full text-sm font-bold">❌ Rejected</span>
+                  <% } else { %>
+                    <span class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-full text-sm font-bold">📄 Draft</span>
+                    <% } %>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Left Column -->
+          <div class="space-y-4">
+            <div>
+              <p class="text-sm font-semibold text-gray-600">Student Name</p>
+              <p class="text-gray-900 mt-1 font-medium">
+                <%= assignment.name %>
+              </p>
+            </div>
+
+            <div>
+              <p class="text-sm font-semibold text-gray-600">Student Email</p>
+              <p class="text-gray-900 mt-1">
+                <%= assignment.email %>
+              </p>
+            </div>
+
+            <div>
+              <p class="text-sm font-semibold text-gray-600">Category</p>
+              <p class="text-gray-900 mt-1">
+                <%= assignment.category %>
+              </p>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="space-y-4">
+            <div>
+              <p class="text-sm font-semibold text-gray-600">Submission Date</p>
+              <p class="text-gray-900 mt-1">
+                <%= assignment.createdAt.toLocaleDateString('en-US', { month: 'long' , day: 'numeric' , year: 'numeric'
+                  }) %>
+              </p>
+            </div>
+
+            <div>
+              <p class="text-sm font-semibold text-gray-600">Days Pending</p>
+
+              <% const daysPassed=Math.floor((Date.now() - assignment.createdAt) / (1000 * 60 * 60 * 24)); const
+                daysLeft=Math.max(0, deadlineDays - daysPassed); let colorClass="text-green-600" ; if (daysLeft <=7 &&
+                daysLeft> 4) colorClass = "text-yellow-600";
+                if (daysLeft <= 4 && daysLeft> 0) colorClass = "text-orange-600";
+                  if (daysLeft === 0) colorClass = "text-red-600 font-bold";
+
+                  // Format completion date
+                  const finalDate = new Date(assignment.updatedAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric"
+                  });
+                  %>
+
+                  <% if (assignment.status==="approved" ) { %>
+
+                    <p class="mt-1 font-semibold text-green-700">
+                      ✔ Approved on <%= finalDate %>
+                    </p>
+
+                    <% } else if (assignment.status==="rejected" ) { %>
+
+                      <p class="mt-1 font-semibold text-red-700">
+                        ✖ Rejected on <%= finalDate %>
+                      </p>
+
+                      <% } else if (assignment.status==="forwarded" ) { %>
+
+                        <p class="mt-1 font-semibold text-purple-700">
+                          📤 Forwarded on <%= finalDate %>
+                        </p>
+
+                        <% } else { %>
+
+                          <p class="mt-1 font-semibold <%= colorClass %>">
+                            <%= daysLeft===0 ? "Overdue" : daysLeft + " days left" %>
+                          </p>
+
+                          <% } %>
+            </div>
+
+
+            <div>
+              <p class="text-sm font-semibold text-gray-600">File</p>
+              <a href="/uploads/<%= assignment.fileUrl %>" download
+                class="inline-flex items-center text-blue-600 hover:text-blue-800 mt-1 font-medium">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download Assignment
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="mt-6 pt-6 border-t">
+          <p class="text-sm font-semibold text-gray-600 mb-2">Description</p>
+          <p class="text-gray-700">
+            <%= assignment.description || 'No description provided' %>
+          </p>
+        </div>
+
+        <!-- Resubmission Note -->
+        <% if (assignment.history && assignment.history.some(h=> h.action === 'resubmitted')) { %>
+          <div class="mt-6 p-4 bg-purple-50 border-l-4 border-purple-500 rounded">
+            <p class="text-sm font-semibold text-purple-900">🔄 This is a resubmitted assignment</p>
+            <p class="text-xs text-purple-700 mt-1">The student has made revisions based on previous feedback.</p>
+          </div>
+          <% } %>
+
+            <!-- Actions -->
+            <div class="mt-6 pt-6 border-t flex gap-4">
+              <a href="/professor/dashboard"
+                class="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-medium">
+                ← Back to Dashboard
+              </a>
+
+              <% if (assignment.status==="submitted" ) { %>
+                <a href="/professor/review/<%= assignment._id %>"
+                  class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                  Review Assignment
+                </a>
+                <% } %>
+            </div>
+      </div>
+
+      <!-- Forward Assignment Section - ONLY FOR APPROVED ASSIGNMENTS -->
+      <% if (assignment.status==="approved" && forwardList && forwardList.length> 0) { %>
+        <div id="forward-section"
+          class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl shadow-md p-8 mb-6 border-2 border-purple-200">
+          <div class="flex items-center mb-4">
+            <svg class="w-8 h-8 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+            <h3 class="text-2xl font-bold text-gray-900">Forward to HOD for Final Approval</h3>
+          </div>
+
+          <p class="text-gray-700 mb-6">This assignment has been approved. Forward it to HOD for final approval:</p>
+
+          <form action="/professor/assignments/<%= assignment._id %>/forward" method="POST"
+            onsubmit="return validateForward()">
+            <div class="mb-5">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Select HOD</label>
+              <select name="newReviewerId" id="hodSelect" required
+                class="w-full p-4 border-2 border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition">
+                <option value="">-- Choose HOD --</option>
+                <% forwardList.forEach(hod=> { %>
+                  <option value="<%= hod._id %>">
+                    <%= hod.name %> (HOD)
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
+
+            <div class="mb-5">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Forwarding Note <span
+                  class="text-red-500">*</span></label>
+              <textarea name="note" id="forwardNote" rows="4" required
+                class="w-full p-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                placeholder="Explain why you're forwarding this assignment to HOD (minimum 10 characters)..."></textarea>
+              <p class="text-xs text-gray-500 mt-1">Minimum 10 characters required</p>
+            </div>
+
+            <button type="submit"
+              class="w-full md:w-auto px-8 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold shadow-lg hover:shadow-xl flex items-center justify-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+              Forward to HOD
+            </button>
+          </form>
+
+          <div class="mt-5 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+            <p class="text-sm text-blue-800 flex items-start">
+              <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd" />
+              </svg>
+              <span>Once forwarded, the assignment will be moved to HOD's queue for final approval. You will be notified
+                of the HOD's decision.</span>
+            </p>
+          </div>
+        </div>
+        <% } else if (assignment.status==="forwarded" ) { %>
+          <div class="bg-purple-50 rounded-xl shadow-md p-8 mb-6 border-2 border-purple-200">
+            <div class="flex items-center">
+              <svg class="w-8 h-8 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h3 class="text-xl font-bold text-purple-900">Assignment Forwarded</h3>
+                <p class="text-gray-700 mt-1">This assignment has been forwarded to HOD for final review.</p>
+              </div>
+            </div>
+          </div>
+          <% } %>
+
+            <!-- Review History -->
+            <div class="bg-white rounded-xl shadow-md p-8">
+              <h3 class="text-2xl font-bold text-gray-900 mb-6">📋 Review History</h3>
+
+              <% if (assignment.history.length===0) { %>
+                <p class="text-gray-500 italic">No review history available yet.</p>
+                <% } else { %>
+                  <div class="space-y-6">
+                    <% assignment.history.forEach(h=> { %>
+                      <div class="border-l-4 pl-6 py-4
+              <%= h.action === 'approved' || h.action === 'final approved' ? 'border-green-500 bg-green-50' : 
+                  (h.action === 'rejected' || h.action === 'final rejected' ? 'border-red-500 bg-red-50' : 
+                  (h.action === 'forwarded' ? 'border-purple-500 bg-purple-50' : 
+                  (h.action === 'resubmitted' ? 'border-blue-500 bg-blue-50' : 
+                  (h.action === 'submitted' ? 'border-gray-500 bg-gray-50' : 
+                  'border-gray-300 bg-gray-50')))) %>">
+
+                        <!-- Action Badge -->
+                        <div class="flex items-center justify-between mb-3">
+                          <span class="px-3 py-1 rounded-full text-xs font-bold uppercase
+                  <%= h.action.includes('approved') ? 'bg-green-200 text-green-800' : 
+                      (h.action.includes('rejected') ? 'bg-red-200 text-red-800' : 
+                      (h.action === 'forwarded' ? 'bg-purple-200 text-purple-800' : 
+                      (h.action === 'resubmitted' ? 'bg-blue-200 text-blue-800' : 
+                      (h.action === 'submitted' ? 'bg-gray-200 text-gray-800' : 
+                      'bg-gray-200 text-gray-700')))) %>">
+                            <%= h.action %>
+                          </span>
+                          <span class="text-xs text-gray-500">
+                            <%= h.date.toLocaleDateString('en-US', { month: 'short' , day: 'numeric' , year: 'numeric' ,
+                              hour: '2-digit' , minute: '2-digit' }) %>
+                          </span>
+                        </div>
+
+                        <!-- Reviewer Info -->
+                        <% if (h.reviewerId) { %>
+                          <p class="text-sm font-semibold text-gray-800 mb-2">
+                            <%= h.action==='submitted' || h.action==='resubmitted' ? 'Action by' : 'Reviewed by' %>
+                              <%= h.reviewerId.name %>
+                                <% if (h.reviewerId.department) { %>
+                                  <span class="text-gray-500 font-normal">(<%= h.reviewerId.department %>)</span>
+                                  <% } %>
+                          </p>
+                          <% } %>
+
+                            <!-- Remarks -->
+                            <% if (h.remark) { %>
+                              <div class="bg-white rounded-lg p-4 border border-gray-200 mt-3">
+                                <p class="text-sm text-gray-700 italic">"<%= h.remark %>"</p>
+                              </div>
+                              <% } %>
+
+                                <!-- Digital Signature -->
+                                <% if (h.signature || h.signatureImage) { %>
+                                  <div class="mt-4 bg-white rounded-lg p-4 border-2 border-blue-200">
+                                    <p class="text-xs text-blue-700 font-semibold uppercase tracking-wide mb-3">
+                                      <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                          clip-rule="evenodd" />
+                                      </svg>
+                                      Digitally Signed
+                                    </p>
+
+                                    <% if (h.signatureImage) { %>
+                                      <div class="flex justify-center">
+                                        <img src="/uploads/<%= h.signatureImage %>" alt="Signature"
+                                          class="h-20 object-contain">
+                                      </div>
+                                      <% } else if (h.signature) { %>
+                                        <p class="text-3xl text-center text-blue-800"
+                                          style="font-family: 'Great Vibes', cursive;">
+                                          <%= h.signature %>
+                                        </p>
+                                        <% } %>
+
+                                          <p class="text-xs text-green-700 text-center mt-3 font-semibold">
+                                            <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                              <path fill-rule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clip-rule="evenodd" />
+                                            </svg>
+                                            Verified & Authenticated
+                                          </p>
+                                  </div>
+                                  <% } %>
+
+                      </div>
+                      <% }) %>
+                  </div>
+                  <% } %>
+            </div>
+
+    </div>
+  </div>
+
+  <script>
+    function validateForward() {
+      const hod = document.getElementById('hodSelect').value;
+      const note = document.getElementById('forwardNote').value.trim();
+
+      if (!hod) {
+        alert('Please select a HOD');
+        return false;
+      }
+
+      if (note.length < 10) {
+        alert('Please provide a forwarding note (at least 10 characters)');
+        return false;
+      }
+
+      return confirm('Forward this assignment to HOD for final approval?');
+    }
+  </script>
+
+  <%- include('../partials/professor/footer') %>

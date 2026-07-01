@@ -1,0 +1,37 @@
+<%- include("../partials/hod/header") %>
+
+<div class="max-w-4xl mx-auto p-6">
+
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold">Notifications</h2>
+
+    <form action="/hod/notifications/mark-all-read" method="POST">
+      <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Mark All Read</button>
+    </form>
+  </div>
+
+  <div class="bg-white shadow rounded-xl divide-y">
+    <% notifications.forEach(n => { %>
+      <div class="p-4 <%= n.read ? '' : 'bg-indigo-50' %>">
+        <p><%= n.message %></p>
+        <p class="text-gray-500 text-sm">
+          <%= n.createdAt.toLocaleString() %>
+        </p>
+
+        <div class="mt-2 flex gap-2">
+          <a href="/hod/assignments/<%= n.assignmentId._id %>" 
+             class="px-3 py-1 bg-indigo-600 text-white rounded text-sm">View</a>
+
+          <% if (!n.read) { %>
+            <form action="/hod/notifications/<%= n._id %>/mark-read" method="POST">
+              <button class="px-3 py-1 bg-gray-200 rounded text-sm">Mark Read</button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+</div>
+
+<%- include("../partials/hod/footer") %>

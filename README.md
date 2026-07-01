@@ -1,108 +1,140 @@
-### 🧠 Git Commands to Push Your Backend Project to a New Repository
+# 🏫 UniCore — University Assignment & Workflow Approval System
 
-Here’s the **step-by-step Git workflow** to push your backend project (the one above) to a **new GitHub repo** safely and cleanly.
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D%2018.x-brightgreen.svg?style=flat-square)](https://nodejs.org/)
+[![Express Version](https://img.shields.io/badge/express-v5.1.0-blue.svg?style=flat-square)](https://expressjs.com/)
+[![Database](https://img.shields.io/badge/database-MongoDB-green.svg?style=flat-square)](https://www.mongodb.com/)
+[![License: ISC](https://img.shields.io/badge/License-ISC-yellow.svg?style=flat-square)](https://opensource.org/licenses/ISC)
+
+**UniCore** is an elegant, secure, and modular university workflow automation backend and dashboard designed to streamline assignment submission, multi-level review, and department management. Built on a clean Model-View-Controller (MVC) architecture, UniCore integrates role-based security, document processing, and modern email notification systems.
 
 ---
 
-#### 1️⃣ Initialize Git in your project folder
+## 🌟 Key Features
+
+*   **👥 Role-Based Access Control (RBAC):** Secure panels with custom controls for **Admin**, **HOD (Head of Department)**, **Professors**, and **Students**.
+*   **📂 Multi-Level Assignment Workflow:** Seamless submission by students, reviews by professors, and ultimate approval/rejection by HODs.
+*   **📄 Rich Document Processing:** Parsing and drawing onto PDFs using `pdf-lib` and `pdf-parse`.
+*   **📬 Automated Email Notifications:** Integrated communication via Brevo (Sendinblue), Resend, and Nodemailer for instant task notifications.
+*   **🔒 High-Grade Security:** Session and JWT-based authentication using HTTP-only cookies, password hashing via `bcrypt`, and secure route guards.
+*   **🤖 AI Integrations:** Integrated with Google Generative AI (Gemini SDK) and OpenAI capabilities.
+
+---
+
+## 🛠 Tech Stack
+
+### Backend
+*   **Runtime:** Node.js (ES Modules)
+*   **Framework:** Express.js
+*   **Database ORM:** Mongoose / MongoDB Atlas
+*   **Session/Auth:** JSON Web Tokens (JWT), Cookies, Bcrypt
+
+### View Template Engine
+*   **Engine:** EJS (Embedded JavaScript) with `express-ejs-layouts`
+*   **Styles:** Vanilla CSS with custom responsive layout designs
+
+### Services & Libraries
+*   **Email Deliverability:** Brevo API, Resend, Nodemailer
+*   **AI Models:** Google `@google/generative-ai` & OpenAI SDK
+*   **PDF Tools:** `pdf-lib`, `pdf-parse`, `pdfjs-dist`
+
+---
+
+## 📂 Architecture Overview
+
+```
+UniCore-main/
+├── config/             # Database connection & project constants
+├── controllers/        # Business logic for Auth, Admin, HODs, Professors, and Students
+├── emails/             # Email templates and delivery configs
+├── middlewares/        # Authentication & Role-verification guards
+├── models/             # Mongoose schemas (User, Admin, Assignment, Department, Notification)
+├── public/             # Static assets (custom CSS files, client-side JS)
+├── routes/             # Express routing endpoints divided by entity
+├── scripts/            # Database seed scripts (e.g., creating superadmin)
+├── uploads/            # Temporary/Persistent storage for uploaded PDFs and assignments
+├── views/              # EJS template pages & layouts
+├── server.js           # Server initialization & entrypoint config
+└── .env                # Local environment configuration file (ignored by Git)
+```
+
+---
+
+## 🚀 Getting Started & Installation Guide
+
+Follow these steps to clone, configure, and run the UniCore project locally:
+
+### 1️⃣ Clone the Repository
 
 ```bash
-cd ~/Desktop/ClgBackend/Third_year_FinalProject
-
-# Initialize git repo
-git init
+git clone https://github.com/YOUR_USERNAME/UNIcore.git
+cd UNIcore
 ```
 
-#### 2️⃣ Create a `.gitignore`
+### 2️⃣ Install Dependencies
 
-Add the most common ignores for Node.js projects:
-
+Make sure you have Node.js installed on your machine.
 ```bash
-echo "node_modules/\n.env\n.env.local\n.DS_Store\n" > .gitignore
+npm install
 ```
 
----
+### 3️⃣ Configure Environment Variables
 
-#### 3️⃣ Stage & commit everything
-
+Create a `.env` file in the root directory:
 ```bash
-git add .
-git commit -m "Initial commit - complete backend setup with MVC and JWT auth"
+touch .env
 ```
 
----
+Add the following environment variables (updating them with your details):
+```env
+PORT=5000
+NODE_ENV="development"
 
-#### 4️⃣ Create a new GitHub repository
+# Database
+MONGO_URI="your_mongodb_connection_string"
 
-1. Go to [https://github.com/new](https://github.com/new)
-2. Give it a name (e.g., `university-assignment-platform-backend`)
-3. **Do NOT** initialize with README, .gitignore, or license (since you already have them)
+# Authentication
+JWT_SECRET="your_custom_jwt_secret_key"
 
-You’ll see instructions like:
+# Email Configuration (Brevo / Resend / SMTP)
+BREVO_API_KEY="your_brevo_api_key"
+RESEND_API_KEY="your_resend_api_key"
+```
 
+### 4️⃣ Seed the Super Admin Account
+
+Execute the seed script to create a default administrator user:
 ```bash
-git remote add origin https://github.com/<your-username>/university-assignment-platform-backend.git
-git branch -M main
-git push -u origin main
+node scripts/createAdmin.scripts.js
 ```
+*Default admin credentials created:*
+*   **Email:** `admin@uni.com`
+*   **Password:** `admin123`
 
-Copy-paste and run those lines.
+### 5️⃣ Run the Application
+
+*   **For Development (with Nodemon):**
+    ```bash
+    npm run dev
+    ```
+*   **For Production:**
+    ```bash
+    npm start
+    ```
+
+Once started, open your browser and navigate to **`http://localhost:5000`**.
 
 ---
 
-#### 5️⃣ Verify push
+## 🔐 User Roles & Permissions
 
-```bash
-git status
-git log --oneline
-git remote -v
-```
-
-You should see your remote repo and commits.
-
----
-
-#### 6️⃣ Optional: add README for clarity
-
-```bash
-echo "# University Assignment Platform (Backend)
-Node.js + Express + MongoDB + JWT Auth (Admin Panel)
-" > README.md
-
-git add README.md
-git commit -m "Add project README"
-git push
-```
+| Role | Permissions & Capabilities |
+| :--- | :--- |
+| **👑 Super Admin** | Create and manage Departments, assign HODs, manage system users, view audits. |
+| **🎓 HOD** | Final sign-off on department assignments, oversee professors & student performance. |
+| **👨‍🏫 Professor** | Evaluate student submissions, provide marks/remarks, forward assignments. |
+| **👦 Student** | Submit assignments, upload supporting document PDFs, view approvals/grades. |
 
 ---
 
-### ✅ Summary — Your Repo Now Includes
-
-```
-Third_year_FinalProject/
-├── server.js
-├── .env (ignored by git)
-├── config/db.js
-├── models/
-├── controllers/
-├── routes/
-├── middlewares/
-├── utils/
-├── scripts/createAdmin.js
-├── public/js/departments.js
-├── views/
-└── .gitignore
-```
-
----
-
-### ⚡ Pro Tips for Exams & Projects
-
-* Always keep `.env` and credentials out of GitHub.
-* Commit in small, meaningful chunks: setup → auth → dashboard → departments.
-* Use `git branch feature/users` when adding new features.
-* Use `git log --oneline` to track your project timeline.
-
----
-
-That’s it — your complete backend project is now version-controlled and safely stored on GitHub. 🚀
+## 📝 License
+This project is licensed under the **ISC License**. Feel free to use and distribute it.

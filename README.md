@@ -16,7 +16,7 @@
 *   **📄 Rich Document Processing:** Parsing and drawing onto PDFs using `pdf-lib` and `pdf-parse`.
 *   **📬 Automated Email Notifications:** Integrated communication via Brevo (Sendinblue), Resend, and Nodemailer for instant task notifications.
 *   **🔒 High-Grade Security:** Session and JWT-based authentication using HTTP-only cookies, password hashing via `bcrypt`, and secure route guards.
-*   **🤖 AI Integrations:** Integrated with Google Generative AI (Gemini SDK) and OpenAI capabilities.
+
 
 ---
 
@@ -34,7 +34,6 @@
 
 ### Services & Libraries
 *   **Email Deliverability:** Brevo API, Resend, Nodemailer
-*   **AI Models:** Google `@google/generative-ai` & OpenAI SDK
 *   **PDF Tools:** `pdf-lib`, `pdf-parse`, `pdfjs-dist`
 
 ---
